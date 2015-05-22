@@ -20,4 +20,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'rspec', '>= 2.4.0'
   s.add_development_dependency 'byebug', '>= 4.0'
+  s.add_development_dependency 'activerecord', '>= 3.2.15'
+  s.add_development_dependency 'sqlite3'
 end

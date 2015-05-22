@@ -8,5 +8,11 @@ module Horza
 
     class InvalidAncestry < StandardError
     end
+
+    class QueryNotYetPerformed < StandardError
+    end
+
+    class CannotGetHashFromCollection < StandardError
+    end
   end
 end

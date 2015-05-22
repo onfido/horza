@@ -10,4 +10,20 @@ require 'active_support/inflector'
 
 module Horza
   extend Configuration
+
+  class << self
+    def result
+      Class.new(Horza.adapter) do
+
+        def method_missing(method, options = {})
+          raise ::Horza::Errors::AdapterNotConfigured.new unless super.respond_to? name
+          @context = super.send(method, options, @context)
+        end
+
+        def result
+          @context
+        end
+      end
+    end
+  end
 end

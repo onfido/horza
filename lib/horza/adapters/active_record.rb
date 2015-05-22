@@ -15,33 +15,39 @@ module Horza
         end
       end
 
-      def get!(options = {})
-        @context = @context.find(options[:id])
+      def get!(id, result = nil)
+        new_result(actor(result).find(id))
       end
 
-      def find_first(options = {})
-        @context = find_all(options).limit(1).first!
+      def find_first(options = {}, result = nil)
+        res = actor(result).where(options[:conditions]).order('ID DESC').first!
+        result ? res : new_result(res)
       end
 
-      def find_all(options = {})
-        @context = @context.where(options[:conditions]).order('ID DESC')
+      def find_all(options = {}, result = nil)
+        res = actor(result).where(options[:conditions]).order('ID DESC')
+        result ? res : new_result(res)
       end
 
-      def ancestors(options = {})
-        get!(options)
-        walk_family_tree(options)
-        rescue NoMethodError
-          raise ::Horza::Errors::InvalidAncestry.new('Invalid relation. Ensure that the plurality of your associations is correct.')
+      def ancestors(options = {}, result = nil)
+        res = walk_family_tree(actor(result).find(options[:id]), options)
+        result ? res : new_result(res)
+      rescue NoMethodError
+        raise ::Horza::Errors::InvalidAncestry.new('Invalid relation. Ensure that the plurality of your associations is correct.')
       end
 
       def to_hash
+        raise ::Horza::Errors::CannotGetHashFromCollection.new if @context.is_a? ::ActiveRecord::Relation
         @context.attributes
+      rescue NoMethodError
+        raise ::Horza::Errors::QueryNotYetPerformed.new
       end
 
       private
 
-      def walk_family_tree(options)
-        options[:via].push(options[:result_key]).each { |relation| @context = @context.send(relation) }
+      def walk_family_tree(object, options)
+        via = options[:via] || []
+        via.push(options[:result_key]).reduce(object) { |object, relation| object.send(relation) }
       end
     end
   end

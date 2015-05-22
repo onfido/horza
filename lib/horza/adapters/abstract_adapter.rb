@@ -62,6 +62,15 @@ module Horza
       def not_implemented_error
         self.class.not_implemented_error
       end
+
+      def new_result(result)
+        ::Horza.result.new(result)
+      end
+
+      def actor(result)
+        return @context unless result
+        result.context
+      end
     end
   end
 end

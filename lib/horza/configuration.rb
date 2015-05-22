@@ -1,7 +1,7 @@
 module Horza
   module Configuration
     String.send(:include, ::Horza::CoreExtensions::String)
-    
+
     def configuration
       @configuration ||= Config.new
     end
@@ -21,7 +21,16 @@ module Horza
     end
 
     def adapter_map
-      @adapter_map ||= ::Horza::Adapters::AbstractAdapter.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
+      @adapter_map ||= generate_map
+    end
+
+    private
+
+    def generate_map
+      ::Horza::Adapters::AbstractAdapter.descendants.reduce({}) do |hash, (klass)|
+        return hash unless klass.name
+        hash.merge(klass.name.split('::').last.underscore.to_sym => klass)
+      end
     end
   end
 
