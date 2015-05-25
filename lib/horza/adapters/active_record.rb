@@ -37,7 +37,6 @@ module Horza
         raise ::Horza::Errors::InvalidAncestry.new('Invalid relation. Ensure that the plurality of your associations is correct.')
       end
 
-      # Where to put this?
       def to_hash
         raise ::Horza::Errors::CannotGetHashFromCollection.new if collection?
         @context.attributes
@@ -57,7 +56,7 @@ module Horza
 
       def walk_family_tree(object, options)
         via = options[:via] || []
-        via.push(options[:result_key]).reduce(object) { |object, relation| object.send(relation) }
+        via.push(options[:target]).reduce(object) { |object, relation| object.send(relation) }
       end
     end
   end

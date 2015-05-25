@@ -30,8 +30,8 @@ module Horza
         singular_entity_class(record).new(adapter.to_hash)
       end
 
-      # Collection classes have the form Horza::Entities::TypesMapper
-      # Single output requires the form Horza::Entities::TypeMapper
+      # Collection classes have the form Horza::Entities::Users
+      # Single output requires the form Horza::Entities::User
       def singular_entity_class(record)
         @singular_entity ||= ::Horza::Entities::single_entity_for(record.class.name.split('::').last.symbolize)
       end

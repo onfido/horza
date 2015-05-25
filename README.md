@@ -20,11 +20,12 @@ user = User.create(user_params)
 horza_user = Horza.adapter.new(user)
 
 # Examples
-user.get! # Find by id - Error on fail
-user.find_first # Find 1 user - Orders by id desc by default
-user.find_all # Find all users that match parameters
-user.ancestors # Traverse relations
-user.to_hash # Return attributes hash
+horza_user.get(id) # Find by id - Return nil on fail
+horza_user.get!(id) # Find by id - Error on fail
+horza_user.find_first(params) # Find 1 user - Orders by id desc by default - Return nil on fail
+horza_user.find_first!(params) # Find 1 user - Orders by id desc by default - Error nil on fail
+horza_user.find_all(params) # Find all users that match parameters
+horza_user.ancestors(target: :employer, via: []) # Traverse relations
 ```
 
 ## Outputs

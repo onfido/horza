@@ -114,13 +114,13 @@ describe Horza do
 
         context 'parent' do
           it 'returns parent' do
-            expect(user_adapter.ancestors(id: user1.id, result_key: :employer).to_h).to eq employer.attributes
+            expect(user_adapter.ancestors(id: user1.id, target: :employer).to_h).to eq employer.attributes
           end
         end
 
         context 'children' do
           it 'returns children' do
-            result = employer_adapter.ancestors(id: employer.id, result_key: :users)
+            result = employer_adapter.ancestors(id: employer.id, target: :users)
             expect(result.length).to eq 2
             expect(result.first.is_a? Horza::Entities::Single).to be true
             expect(result.first.to_hash).to eq HorzaSpec::User.order('id DESC').last.attributes
@@ -129,21 +129,21 @@ describe Horza do
 
         context 'invalid ancestry' do
           it 'throws error' do
-            expect { employer_adapter.ancestors(id: employer.id, result_key: :user) }.to raise_error Horza::Errors::InvalidAncestry
+            expect { employer_adapter.ancestors(id: employer.id, target: :user) }.to raise_error Horza::Errors::InvalidAncestry
           end
         end
 
         context 'valid ancestry with no saved childred' do
           let(:employer2) { HorzaSpec::Employer.create }
           it 'returns empty collection error' do
-            expect(employer_adapter.ancestors(id: employer2.id, result_key: :users).empty?).to be true
+            expect(employer_adapter.ancestors(id: employer2.id, target: :users).empty?).to be true
           end
         end
 
         context 'valid ancestry with no saved parent' do
           let(:user2) { HorzaSpec::User.create }
           it 'returns nil' do
-            expect(user_adapter.ancestors(id: user2.id, result_key: :employer)).to be nil
+            expect(user_adapter.ancestors(id: user2.id, target: :employer)).to be nil
           end
         end
       end
@@ -158,7 +158,7 @@ describe Horza do
         end
 
         it 'returns the correct ancestor' do
-          expect(user_adapter.ancestors(id: user.id, result_key: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
+          expect(user_adapter.ancestors(id: user.id, target: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
         end
       end
     end

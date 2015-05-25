@@ -1,7 +1,6 @@
 module Horza
   module Entities
     class << self
-
       def single_entity_for(entity_symbol)
         single_entities[entity_symbol] || ::Horza::Entities::Single
       end
