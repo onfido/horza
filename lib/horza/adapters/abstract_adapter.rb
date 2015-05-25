@@ -19,18 +19,15 @@ module Horza
         def not_implemented_error
           raise ::Horza::Errors::MethodNotImplemented, 'You must implement this method in your adapter.'
         end
-
-        def descendants
-          descendants = []
-          ObjectSpace.each_object(singleton_class) do |k|
-            descendants.unshift k unless k == self
-          end
-          descendants
-        end
       end
 
       def initialize(context)
         @context = context
+      end
+
+      def get(options = {})
+        get!(options = {})
+      rescue *self.class.expected_errors
       end
 
       def get!(options = {})
@@ -38,6 +35,11 @@ module Horza
       end
 
       def find_first(options = {})
+        find_first!(options = {})
+      rescue *self.class.expected_errors
+      end
+
+      def find_first!(options = {})
         not_implemented_error
       end
 
@@ -57,19 +59,19 @@ module Horza
         not_implemented_error
       end
 
+      def entity_class(res = @context)
+        collection?(res) ? ::Horza::Entities.collection_entity_for(entity_symbol).new(res) : ::Horza::Entities.single_entity_for(entity_symbol).new(res)
+      end
+
       private
 
       def not_implemented_error
         self.class.not_implemented_error
       end
 
-      def new_result(result)
-        ::Horza.result.new(result)
-      end
-
-      def actor(result)
-        return @context unless result
-        result.context
+      def entity_symbol
+        klass = @context.name.split('::').last
+        collection? ? klass.pluralize.symbolize : klass.symbolize
       end
     end
   end

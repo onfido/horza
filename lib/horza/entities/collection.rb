@@ -26,15 +26,14 @@ module Horza
       end
 
       def singular_entity(record)
-        singular_entity_class.new(Horza.adapter.new(record).to_hash)
+        adapter = Horza.adapter.new(record)
+        singular_entity_class(record).new(adapter.to_hash)
       end
 
       # Collection classes have the form Horza::Entities::TypesMapper
       # Single output requires the form Horza::Entities::TypeMapper
-      def singular_entity_class
-        @singular_entity ||= Kernel.const_get(self.class.name.deconstantize).const_get(self.class.name.demodulize.singularize)
-      rescue NameError
-        @singular_entity = ::Horza::Entities::Single
+      def singular_entity_class(record)
+        @singular_entity ||= ::Horza::Entities::single_entity_for(record.class.name.split('::').last.symbolize)
       end
     end
   end

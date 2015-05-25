@@ -12,18 +12,8 @@ module Horza
   extend Configuration
 
   class << self
-    def result
-      Class.new(Horza.adapter) do
-
-        def method_missing(method, options = {})
-          raise ::Horza::Errors::AdapterNotConfigured.new unless super.respond_to? name
-          @context = super.send(method, options, @context)
-        end
-
-        def result
-          @context
-        end
-      end
+    def descendants_map(klass)
+      klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
     end
   end
 end

@@ -1,9 +1,21 @@
 module Horza
   module Entities
     class << self
-      def const_missing(name)
-        parent_klass = name.to_s.plural? ? Horza::Entities::Collection : Horza::Entities::Single
-        Horza::Entities.const_set(name, Class.new(parent_klass))
+
+      def single_entity_for(entity_symbol)
+        single_entities[entity_symbol] || ::Horza::Entities::Single
+      end
+
+      def single_entities
+        @singles ||= ::Horza.descendants_map(::Horza::Entities::Single)
+      end
+
+      def collection_entity_for(entity_symbol)
+        collection_entities[entity_symbol] || ::Horza::Entities::Collection
+      end
+
+      def collection_entities
+        @singles ||= ::Horza.descendants_map(::Horza::Entities::Collection)
       end
     end
   end
