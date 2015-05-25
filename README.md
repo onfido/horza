@@ -30,16 +30,44 @@ horza_user.ancestors(target: :employer, via: []) # Traverse relations
 
 ## Outputs
 
-Horza provides vanilla entities than can be used to replace ORM response objects.
+Horza queries return very dumb vanilla entities instead of ORM response objects.
+Singular entities are simply hashes that allow both hash and dot notation, and binary helpers.
+Collection entities behave like arrays.
 
 ```ruby
-# Entity for a single object
-# ActiveRecord Example
-user = User.create(user_params)
-horza_user = Horza.adapter.new(user)
+# Singular Entity
+result = horza_user.find_first(first_name: 'Blake') # => {"id"=>1, "first_name"=>"Blake", "last_name"=>"Turner", "employer_id"=>nil}
+result.class.name # => "Horza::Entities::Single"
 
-# Execute Query
-horza_user.find_first(first_name: 'Blake')
+result['id'] # => 1
+result.id # => 1
+result.id? # => true
 
-Horza.single(horza_user.to_hash)
+# Collection Entity
+result = horza_user.find_all(last_name: 'Turner')
+result.class.name # => "Horza::Entities::Collection"
+
+result.length # => 1
+result.size # => 1
+result.empty? # => false
+result.present? # => true
+result.first # => {"id"=>1, "first_name"=>"Blake", "last_name"=>"Turner", "employer_id"=>nil}
+result.last # => {"id"=>1, "first_name"=>"Blake", "last_name"=>"Turner", "employer_id"=>nil}
+result[0] # => {"id"=>1, "first_name"=>"Blake", "last_name"=>"Turner", "employer_id"=>nil}
+```
+
+## Custom Entities
+
+You can define your own entities by making them subclasses of [Horza entities](https://github.com/onfido/horza/tree/master/lib/horza/entities). Just make sure they have the same class name as your ORM classes. Horza will automatically detect custom entities and use them for output.
+
+```ruby
+module CustomEntities
+  # Collection Entity
+  class Users < Horza::Entities::Collection
+  end
+
+  # Singular Entity
+  class User < Horza::Entities::Single
+  end
+end
 ```

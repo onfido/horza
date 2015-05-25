@@ -10,6 +10,8 @@ else
       create_table(:employers, force: true) {|t| t.string :name }
       create_table(:users, force: true) {|t| t.string :first_name; t.string :last_name; t.references :employer; }
       create_table(:sports_cars, force: true) {|t| t.string :make; t.references :employer; }
+      create_table(:dummy_models, force: true) {|t| t.string :key }
+      create_table(:other_dummy_models, force: true) {|t| t.string :key }
     end
   end
 
@@ -24,6 +26,14 @@ else
     end
 
     class SportsCar < ActiveRecord::Base
+      belongs_to :employer
+    end
+
+    class DummyModel < ActiveRecord::Base
+      belongs_to :employer
+    end
+
+    class OtherDummyModel < ActiveRecord::Base
       belongs_to :employer
     end
   end
@@ -66,7 +76,15 @@ describe Horza do
       end
     end
 
-    describe '#find_first' do
+    describe '#get' do
+      context 'when user does not exist' do
+        it 'returns nil' do
+          expect(user_adapter.get(999)).to be nil
+        end
+      end
+    end
+
+    describe '#find_first!' do
       context 'when users exist' do
         before { 3.times { HorzaSpec::User.create(last_name: last_name) } }
         it 'returns single Entity' do
@@ -74,21 +92,23 @@ describe Horza do
         end
 
         it 'returns user' do
-          expect(user_adapter.find_first(last_name: last_name).to_h).to eq HorzaSpec::User.where(last_name: last_name).order('id DESC').first.attributes
+          expect(user_adapter.find_first!(last_name: last_name).to_h).to eq HorzaSpec::User.where(last_name: last_name).order('id DESC').first.attributes
         end
       end
 
+      context 'when user does not exist' do
+        it 'throws error' do
+          expect { user_adapter.find_first!(last_name: last_name) }.to raise_error ActiveRecord::RecordNotFound
+        end
+      end
+    end
+
+    describe '#find_first' do
       context 'when user does not exist' do
         it 'returns nil' do
           expect(user_adapter.find_first(last_name: last_name)).to be nil
         end
       end
-
-      # context 'when user does not exist' do
-      #   it 'throws error' do
-      #     expect { user_adapter.find_first(last_name: last_name) }.to raise_error ActiveRecord::RecordNotFound
-      #   end
-      # end
     end
 
     describe '#find_all' do
@@ -159,6 +179,41 @@ describe Horza do
 
         it 'returns the correct ancestor' do
           expect(user_adapter.ancestors(id: user.id, target: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
+        end
+      end
+    end
+  end
+
+  describe 'Entities' do
+    describe 'Collection' do
+      context '#singular_entity_class' do
+        context 'when singular entity class does not exist' do
+        let(:dummy_model) { HorzaSpec::DummyModel.create }
+
+          module TestNamespace
+            class DummyModels < Horza::Entities::Collection
+            end
+          end
+
+          it 'returns Horza::Collection::Single' do
+            expect(TestNamespace::DummyModels.new([]).send(:singular_entity_class, dummy_model)).to eq Horza::Entities::Single
+          end
+        end
+
+        context 'when singular entity class exists' do
+          let(:other_dummy_model) { HorzaSpec::OtherDummyModel.create }
+
+          module TestNamespace
+            class OtherDummyModels < Horza::Entities::Collection
+            end
+
+            class OtherDummyModel < Horza::Entities::Single
+            end
+          end
+
+          it 'returns the existing singular class' do
+            expect(TestNamespace::OtherDummyModels.new([]).send(:singular_entity_class, other_dummy_model)).to eq TestNamespace::OtherDummyModel
+          end
         end
       end
     end

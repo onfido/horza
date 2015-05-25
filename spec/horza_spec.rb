@@ -18,35 +18,4 @@ describe Horza do
       end
     end
   end
-
-  describe 'Entities' do
-    describe 'Collection' do
-      context '#singular_entity_class' do
-        context 'when singular entity class does not exist' do
-          module TestNamespace
-            class GetUsers < Horza::Entities::Collection
-            end
-          end
-
-          it 'returns Horza::Collection::Single' do
-            expect(TestNamespace::GetUsers.new([]).send(:singular_entity_class, HorzaSpec::User.first)).to eq Horza::Entities::Single
-          end
-        end
-
-        context 'when singular entity class exists' do
-          module TestNamespace
-            class GetEmployers < Horza::Entities::Collection
-            end
-
-            class GetEmployer < Horza::Entities::Single
-            end
-          end
-
-          xit 'returns the existing singular class' do
-            expect(TestNamespace::GetEmployers.new([]).send(:singular_entity_class)).to eq TestNamespace::GetEmployer
-          end
-        end
-      end
-    end
-  end
 end
