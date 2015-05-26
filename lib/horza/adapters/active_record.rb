@@ -47,7 +47,7 @@ module Horza
       private
 
       def base_query(options)
-        @context.where(options[:conditions]).order('ID DESC')
+        @context.where(options).order('ID DESC')
       end
 
       def collection?(subject = @context)

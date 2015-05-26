@@ -86,7 +86,10 @@ describe Horza do
 
     describe '#find_first!' do
       context 'when users exist' do
-        before { 3.times { HorzaSpec::User.create(last_name: last_name) } }
+        before do
+          3.times { HorzaSpec::User.create(last_name: last_name) }
+          2.times { HorzaSpec::User.create(last_name: 'OTHER') }
+        end
         it 'returns single Entity' do
           expect(user_adapter.find_first(last_name: last_name).is_a? Horza::Entities::Single).to be true
         end
@@ -113,7 +116,10 @@ describe Horza do
 
     describe '#find_all' do
       context 'when users exist' do
-        before { 3.times { HorzaSpec::User.create(last_name: last_name) } }
+        before do
+          3.times { HorzaSpec::User.create(last_name: last_name) }
+          2.times { HorzaSpec::User.create(last_name: 'OTHER') }
+        end
         it 'returns user' do
           expect(user_adapter.find_all(last_name: last_name).length).to eq 3
         end
