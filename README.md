@@ -1,6 +1,6 @@
 # Horza
 
-Horza is a shapeshifter that provides common inputs and outputs for your ORM.
+Horza is a library for decoupling your application from the ORM you have implemented.
 
 ## Inputs
 
