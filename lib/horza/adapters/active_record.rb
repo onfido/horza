@@ -1,6 +1,8 @@
 module Horza
   module Adapters
     class ActiveRecord < AbstractAdapter
+      INVALID_ANCESTRY_MSG = 'Invalid relation. Ensure that the plurality of your associations is correct.'
+
       class << self
         def expected_errors
           [::ActiveRecord::RecordNotFound]
@@ -33,15 +35,12 @@ module Horza
         return nil unless result
 
         collection?(result) ? entity_class(result) : entity_class(result.attributes)
-      rescue NoMethodError
-        raise ::Horza::Errors::InvalidAncestry.new('Invalid relation. Ensure that the plurality of your associations is correct.')
       end
 
       def to_hash
         raise ::Horza::Errors::CannotGetHashFromCollection.new if collection?
+        raise ::Horza::Errors::QueryNotYetPerformed.new unless @context.respond_to?(:attributes)
         @context.attributes
-      rescue NoMethodError
-        raise ::Horza::Errors::QueryNotYetPerformed.new
       end
 
       private
@@ -51,12 +50,15 @@ module Horza
       end
 
       def collection?(subject = @context)
-        subject.is_a? ::ActiveRecord::Relation
+        subject.is_a?(::ActiveRecord::Relation) || subject.is_a?(Array)
       end
 
       def walk_family_tree(object, options)
         via = options[:via] || []
-        via.push(options[:target]).reduce(object) { |object, relation| object.send(relation) }
+        via.push(options[:target]).reduce(object) do |object, relation|
+          raise ::Horza::Errors::InvalidAncestry.new(INVALID_ANCESTRY_MSG) unless object.respond_to? relation
+          object.send(relation)
+        end
       end
     end
   end
