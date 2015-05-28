@@ -4,10 +4,6 @@ module Horza
       INVALID_ANCESTRY_MSG = 'Invalid relation. Ensure that the plurality of your associations is correct.'
 
       class << self
-        def expected_errors
-          [::ActiveRecord::RecordNotFound]
-        end
-
         def context_for_entity(entity)
           entity_context_map[entity]
         end
@@ -19,14 +15,45 @@ module Horza
 
       def get!(id)
         entity_class(@context.find(id).attributes)
+      rescue ::ActiveRecord::RecordNotFound => e
+        raise Horza::Errors::RecordNotFound.new(e)
       end
 
       def find_first!(options = {})
         entity_class(base_query(options).first!.attributes)
+      rescue ::ActiveRecord::RecordNotFound => e
+        raise Horza::Errors::RecordNotFound.new(e)
       end
 
       def find_all(options = {})
         entity_class(base_query(options))
+      end
+
+      def create!(options = {})
+        record = @context.new(options)
+        record.save!
+        entity_class(record.attributes)
+      rescue ::ActiveRecord::RecordInvalid => e
+        raise Horza::Errors::RecordInvalid.new(e)
+      end
+
+      def update!(id, options = {})
+        record = @context.find(id)
+        record.assign_attributes(options)
+        record.save!
+        record
+      rescue ::ActiveRecord::RecordNotFound => e
+        raise Horza::Errors::RecordNotFound.new(e)
+      rescue ::ActiveRecord::RecordInvalid => e
+        raise Horza::Errors::RecordInvalid.new(e)
+      end
+
+      def delete!(id)
+        record = @context.find(id)
+        record.destroy!
+        true
+      rescue ::ActiveRecord::RecordNotFound => e
+        raise Horza::Errors::RecordNotFound.new(e)
       end
 
       def ancestors(options = {})

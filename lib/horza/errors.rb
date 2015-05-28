@@ -14,5 +14,11 @@ module Horza
 
     class CannotGetHashFromCollection < StandardError
     end
+
+    class RecordInvalid < StandardError
+    end
+
+    class RecordNotFound < StandardError
+    end
   end
 end
