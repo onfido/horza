@@ -9,6 +9,7 @@ else
     ActiveRecord::Schema.define(:version => 0) do
       create_table(:employers, force: true) {|t| t.string :name }
       create_table(:users, force: true) {|t| t.string :first_name; t.string :last_name; t.references :employer; }
+      create_table(:customers, force: true) {|t| t.string :first_name; t.string :last_name; }
       create_table(:sports_cars, force: true) {|t| t.string :make; t.references :employer; }
       create_table(:dummy_models, force: true) {|t| t.string :key }
       create_table(:other_dummy_models, force: true) {|t| t.string :key }
@@ -23,6 +24,10 @@ else
 
     class User < ActiveRecord::Base
       belongs_to :employer
+    end
+
+    class Customer < ActiveRecord::Base
+      validates :last_name, presence: true
     end
 
     class SportsCar < ActiveRecord::Base
@@ -43,6 +48,7 @@ describe Horza do
   let(:last_name) { 'Turner' }
   let(:adapter) { :active_record }
   let(:user_adapter) { Horza.adapter.new(HorzaSpec::User) }
+  let(:customer_adapter) { Horza.adapter.new(HorzaSpec::Customer) }
   let(:employer_adapter) { Horza.adapter.new(HorzaSpec::Employer) }
   let(:sports_car_adapter) { Horza.adapter.new(HorzaSpec::SportsCar) }
 
@@ -71,7 +77,7 @@ describe Horza do
 
       context 'when user does not exist' do
         it 'throws error' do
-          expect { user_adapter.get!(999) }.to raise_error ActiveRecord::RecordNotFound
+          expect { user_adapter.get!(999) }.to raise_error Horza::Errors::RecordNotFound
         end
       end
     end
@@ -101,7 +107,7 @@ describe Horza do
 
       context 'when user does not exist' do
         it 'throws error' do
-          expect { user_adapter.find_first!(last_name: last_name) }.to raise_error ActiveRecord::RecordNotFound
+          expect { user_adapter.find_first!(last_name: last_name) }.to raise_error Horza::Errors::RecordNotFound
         end
       end
     end
@@ -128,6 +134,108 @@ describe Horza do
       context 'when user does not exist' do
         it 'throws error' do
           expect(user_adapter.find_all(last_name: last_name).empty?).to be true
+        end
+      end
+    end
+
+    describe '#create' do
+      context 'when parameters are valid' do
+        it 'creates the record' do
+          expect { customer_adapter.create(last_name: last_name) }.to change(HorzaSpec::Customer, :count).by(1)
+        end
+
+        it 'returns the entity' do
+          expect(customer_adapter.create(last_name: last_name).last_name).to eq last_name
+        end
+      end
+
+      context 'when parameters are invalid' do
+        it 'does not create the record' do
+          expect { customer_adapter.create }.to change(HorzaSpec::Customer, :count).by(0)
+        end
+
+        it 'returns nil' do
+          expect(customer_adapter.create).to be nil
+        end
+      end
+    end
+
+    describe '#create!' do
+      context 'when parameters are invalid' do
+        it 'throws error' do
+          expect { customer_adapter.create! }.to raise_error Horza::Errors::RecordInvalid
+        end
+      end
+    end
+
+    describe '#update' do
+      let(:customer) { HorzaSpec::Customer.create(last_name: last_name) }
+
+      context 'when parameters are valid' do
+        let(:updated_last_name) { 'Smith' }
+
+        it 'returns the updated entity' do
+          expect(customer_adapter.update(customer.id, last_name: updated_last_name).last_name).to eq updated_last_name
+        end
+      end
+
+      context 'when parameters are invalid' do
+        it 'returns nil' do
+          expect(customer_adapter.update(customer.id, last_name: nil)).to be nil
+        end
+      end
+
+      context 'when record does not exist' do
+        it 'returns nil' do
+          expect(customer_adapter.update(999)).to be nil
+        end
+      end
+    end
+
+    describe '#update!' do
+      let(:customer) { HorzaSpec::Customer.create(last_name: last_name) }
+
+      context 'when parameters are invalid' do
+        it 'throws error' do
+          expect { customer_adapter.update!(customer.id, last_name: nil) }.to raise_error Horza::Errors::RecordInvalid
+        end
+      end
+
+      context 'when record does not exist' do
+        it 'returns nil' do
+          expect { customer_adapter.update!(999) }.to raise_error Horza::Errors::RecordNotFound
+        end
+      end
+    end
+
+    describe '#delete' do
+      let!(:customer) { HorzaSpec::Customer.create(last_name: last_name) }
+
+      context 'when record exists' do
+        let(:updated_last_name) { 'Smith' }
+
+        it 'destroys the record' do
+          expect { customer_adapter.delete(customer.id) }.to change(HorzaSpec::Customer, :count).by(-1)
+        end
+
+        it 'returns true' do
+          expect(customer_adapter.delete(customer.id)).to be true
+        end
+      end
+
+      context 'when record does not exist' do
+        it 'returns nil' do
+          expect(customer_adapter.delete(999)).to be nil
+        end
+      end
+    end
+
+    describe '#delete!' do
+      let(:customer) { HorzaSpec::Customer.create(last_name: last_name) }
+
+      context 'when record does not exist' do
+        it 'returns nil' do
+          expect { customer_adapter.delete!(999) }.to raise_error Horza::Errors::RecordNotFound
         end
       end
     end

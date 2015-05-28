@@ -5,7 +5,7 @@ module Horza
 
       class << self
         def expected_errors
-          not_implemented_error
+          [::Horza::Errors::RecordNotFound, ::Horza::Errors::RecordInvalid]
         end
 
         def context_for_entity(entity)
@@ -26,7 +26,7 @@ module Horza
       end
 
       def get(options = {})
-        get!(options = {})
+        get!(options)
       rescue *self.class.expected_errors
       end
 
@@ -35,7 +35,7 @@ module Horza
       end
 
       def find_first(options = {})
-        find_first!(options = {})
+        find_first!(options)
       rescue *self.class.expected_errors
       end
 
@@ -44,6 +44,33 @@ module Horza
       end
 
       def find_all(options = {})
+        not_implemented_error
+      end
+
+      def create(options = {})
+        create!(options)
+      rescue *self.class.expected_errors
+      end
+
+      def create!(options = {})
+        not_implemented_error
+      end
+
+      def delete(id)
+        delete!(id)
+      rescue *self.class.expected_errors
+      end
+
+      def delete!(id)
+        not_implemented_error
+      end
+
+      def update(id, options = {})
+        update!(id, options)
+      rescue *self.class.expected_errors
+      end
+
+      def update!(id, options = {})
         not_implemented_error
       end
 
