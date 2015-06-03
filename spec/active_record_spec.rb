@@ -300,6 +300,42 @@ describe Horza do
 
   describe 'Entities' do
     describe 'Collection' do
+      let(:members) do
+        3.times.map { HorzaSpec::User.create }
+      end
+
+      subject { Horza::Entities::Collection.new(members) }
+
+      context '#each' do
+        context 'when name is of ancestry type' do
+          it 'yields a Get::Entities::Single with each iteration' do
+            subject.each do |member|
+              expect(member.is_a? Horza::Entities::Single).to be true
+            end
+          end
+        end
+      end
+
+      context '#map' do
+        context 'when name is of ancestry type' do
+          it 'yields a Get::Entities::Single with each iteration, returns array' do
+            map = subject.map(&:id)
+            expect(map.is_a? Array).to be true
+            expect(map.length).to eq 3
+          end
+        end
+      end
+
+      context '#collect' do
+        context 'when name is of ancestry type' do
+          it 'yields a Get::Entities::Single with each iteration, returns array' do
+            map = subject.collect(&:id)
+            expect(map.is_a? Array).to be true
+            expect(map.length).to eq 3
+          end
+        end
+      end
+
       context '#singular_entity_class' do
         context 'when singular entity class does not exist' do
         let(:dummy_model) { HorzaSpec::DummyModel.create }

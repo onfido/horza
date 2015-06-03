@@ -5,23 +5,25 @@ module Horza
         @collection = collection
       end
 
-      def each
-        @collection.each do |result|
-          yield singular_entity(result)
-        end
-      end
-
       def [](index)
         singular_entity(@collection[index])
       end
 
       private
 
-      def method_missing(method)
+      def method_missing(method, &block)
         if [:length, :size, :empty?, :present?].include? method
           @collection.send(method)
         elsif [:first, :last].include? method
           singular_entity(@collection.send(method))
+        elsif [:each, :map, :collect]
+          enum_method(method, &block)
+        end
+      end
+
+      def enum_method(method, &block)
+        @collection.send(method) do |result|
+          yield singular_entity(result)
         end
       end
 
