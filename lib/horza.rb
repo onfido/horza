@@ -1,3 +1,5 @@
+require 'horza/adapters/class_methods'
+require 'horza/adapters/instance_methods'
 require 'horza/adapters/abstract_adapter'
 require 'horza/adapters/active_record'
 require 'horza/core_extensions/string'
@@ -6,7 +8,7 @@ require 'horza/entities/collection'
 require 'horza/entities'
 require 'horza/configuration'
 require 'horza/errors'
-require 'active_support/inflector'
+require 'active_support'
 
 module Horza
   extend Configuration

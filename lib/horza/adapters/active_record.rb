@@ -4,64 +4,63 @@ module Horza
       INVALID_ANCESTRY_MSG = 'Invalid relation. Ensure that the plurality of your associations is correct.'
 
       class << self
-        def context_for_entity(entity)
-          entity_context_map[entity]
-        end
-
         def entity_context_map
           @map ||= ::Horza.descendants_map(::ActiveRecord::Base)
+        end
+
+        def expected_errors_map
+          {
+            ::ActiveRecord::RecordNotFound => Horza::Errors::RecordNotFound,
+            ::ActiveRecord::RecordInvalid => Horza::Errors::RecordInvalid
+          }
         end
       end
 
       def get!(id)
-        entity_class(@context.find(id).attributes)
-      rescue ::ActiveRecord::RecordNotFound => e
-        raise Horza::Errors::RecordNotFound.new(e)
+        run_and_convert_exceptions { entity_class(@context.find(id).attributes) }
       end
 
       def find_first!(options = {})
-        entity_class(base_query(options).first!.attributes)
-      rescue ::ActiveRecord::RecordNotFound => e
-        raise Horza::Errors::RecordNotFound.new(e)
+        run_and_convert_exceptions { entity_class(base_query(options).first!.attributes) }
       end
 
       def find_all(options = {})
-        entity_class(base_query(options))
+        run_and_convert_exceptions { entity_class(base_query(options)) }
       end
 
       def create!(options = {})
-        record = @context.new(options)
-        record.save!
-        entity_class(record.attributes)
-      rescue ::ActiveRecord::RecordInvalid => e
-        raise Horza::Errors::RecordInvalid.new(e)
+        run_and_convert_exceptions do
+          record = @context.new(options)
+          record.save!
+          entity_class(record.attributes)
+        end
       end
 
       def update!(id, options = {})
-        record = @context.find(id)
-        record.assign_attributes(options)
-        record.save!
-        record
-      rescue ::ActiveRecord::RecordNotFound => e
-        raise Horza::Errors::RecordNotFound.new(e)
-      rescue ::ActiveRecord::RecordInvalid => e
-        raise Horza::Errors::RecordInvalid.new(e)
+        run_and_convert_exceptions do
+          record = @context.find(id)
+          record.assign_attributes(options)
+          record.save!
+          entity_class(record.attributes)
+        end
       end
 
       def delete!(id)
-        record = @context.find(id)
-        record.destroy!
-        true
-      rescue ::ActiveRecord::RecordNotFound => e
-        raise Horza::Errors::RecordNotFound.new(e)
+        run_and_convert_exceptions do
+          record = @context.find(id)
+          record.destroy!
+          true
+        end
       end
 
       def ancestors(options = {})
-        result = walk_family_tree(@context.find(options[:id]), options)
+        run_and_convert_exceptions do
+          result = walk_family_tree(@context.find(options[:id]), options)
 
-        return nil unless result
+          return nil unless result
 
-        collection?(result) ? entity_class(result) : entity_class(result.attributes)
+          collection?(result) ? entity_class(result) : entity_class(result.attributes)
+        end
       end
 
       def to_hash
