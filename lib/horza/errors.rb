@@ -20,5 +20,8 @@ module Horza
 
     class RecordNotFound < StandardError
     end
+
+    class InvalidOption < StandardError
+    end
   end
 end

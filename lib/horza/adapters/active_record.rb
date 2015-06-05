@@ -23,11 +23,11 @@ module Horza
       end
 
       def find_first!(options = {})
-        run_and_convert_exceptions { entity_class(base_query(options).first!.attributes) }
+        run_and_convert_exceptions { entity_class(query(options).first!.attributes) }
       end
 
       def find_all(options = {})
-        run_and_convert_exceptions { entity_class(base_query(options)) }
+        run_and_convert_exceptions { entity_class(query(options)) }
       end
 
       def create!(options = {})
@@ -57,11 +57,16 @@ module Horza
 
       def ancestors(options = {})
         run_and_convert_exceptions do
-          result = walk_family_tree(@context.find(options[:id]), options)
+          options = Options.new(options)
 
+          base = @context.find(options.id)
+          base = base.includes(options.eager_hash) if options.eager_load?
+
+          result = walk_family_tree(base, options)
           return nil unless result
 
-          collection?(result) ? entity_class(result) : entity_class(result.attributes)
+          # result = query(options, result)
+          collection?(result) ? entity_class(query(options, result)) : entity_class(result.attributes)
         end
       end
 
@@ -73,8 +78,15 @@ module Horza
 
       private
 
-      def base_query(options)
-        @context.where(options).order('ID DESC')
+      def query(options, base = @context)
+        options = options.is_a?(Options) ? options : Options.new(options)
+
+        result = base
+        result = base.where(options.conditions) if options.conditions
+        result = result.order(base.arel_table[options.order_field].send(options.order_direction))
+        result = result.limit(options.limit) if options.limit
+        result = result.limit(options.offset) if options.offset
+        result
       end
 
       def collection?(subject = @context)
@@ -82,8 +94,9 @@ module Horza
       end
 
       def walk_family_tree(object, options)
-        via = options[:via] || []
-        via.push(options[:target]).reduce(object) do |object, relation|
+        via = options.via || []
+
+        via.push(options.target).reduce(object) do |object, relation|
           raise ::Horza::Errors::InvalidAncestry.new(INVALID_ANCESTRY_MSG) unless object.respond_to? relation
           object.send(relation)
         end

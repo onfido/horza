@@ -21,16 +21,7 @@ module Horza
     end
 
     def adapter_map
-      @adapter_map ||= generate_map
-    end
-
-    private
-
-    def generate_map
-      ::Horza::Adapters::AbstractAdapter.descendants.reduce({}) do |hash, (klass)|
-        return hash unless klass.name
-        hash.merge(klass.name.split('::').last.underscore.to_sym => klass)
-      end
+      @adapter_map ||= ::Horza.descendants_map(::Horza::Adapters::AbstractAdapter)
     end
   end
 

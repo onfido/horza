@@ -3,6 +3,7 @@ module Horza
     class AbstractAdapter
       extend ::Horza::Adapters::ClassMethods
       include ::Horza::Adapters::InstanceMethods
+      extend ActiveSupport::DescendantsTracker
 
       attr_reader :context
 
