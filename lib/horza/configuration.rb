@@ -35,6 +35,6 @@ module Horza
   end
 
   class Config
-    attr_accessor :adapter
+    attr_accessor :adapter, :development_mode
   end
 end

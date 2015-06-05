@@ -5,6 +5,8 @@ module Horza
 
       class << self
         def entity_context_map
+          # Rails doesn't preload classes in development mode, caching doesn't make sense
+          return ::Horza.descendants_map(::ActiveRecord::Base) if ::Horza.configuration.development_mode
           @map ||= ::Horza.descendants_map(::ActiveRecord::Base)
         end
 

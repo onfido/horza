@@ -59,6 +59,28 @@ describe Horza do
     HorzaSpec::Employer.delete_all
   end
 
+  context '#context_for_entity' do
+    it 'Returns correct class' do
+      expect(Horza.adapter.context_for_entity(:user)).to eq HorzaSpec::User
+    end
+
+    context 'in development mode' do
+      before do
+        Horza.reset
+        Horza.configure do |config|
+          config.adapter = adapter
+          config.development_mode = true
+        end
+      end
+      after do
+        Horza.reset
+      end
+      it 'Returns correct class' do
+        expect(Horza.adapter.context_for_entity(:user)).to eq HorzaSpec::User
+      end
+    end
+  end
+
   describe '#adapter' do
     let(:user) { HorzaSpec::User.create }
 
