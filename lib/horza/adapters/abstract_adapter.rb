@@ -41,7 +41,7 @@ module Horza
         not_implemented_error
       end
 
-      def ancestors(options = {})
+      def association(options = {})
         not_implemented_error
       end
 

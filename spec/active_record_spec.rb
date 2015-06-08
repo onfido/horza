@@ -173,7 +173,7 @@ describe Horza do
 
         context 'with offset' do
           let(:total) { 20 }
-          let(:offset) { 10 }
+          let(:offset) { 7 }
           before do
             total.times { HorzaSpec::User.create(last_name: 'Smith') }
           end
@@ -292,7 +292,7 @@ describe Horza do
       end
     end
 
-    context '#ancestors' do
+    context '#association' do
       context 'direct relation' do
         let(:employer) { HorzaSpec::Employer.create }
         let!(:user1) { HorzaSpec::User.create(employer: employer) }
@@ -300,13 +300,13 @@ describe Horza do
 
         context 'parent' do
           it 'returns parent' do
-            expect(user_adapter.ancestors(id: user1.id, target: :employer).to_h).to eq employer.attributes
+            expect(user_adapter.association(id: user1.id, target: :employer).to_h).to eq employer.attributes
           end
         end
 
         context 'children' do
           it 'returns children' do
-            result = employer_adapter.ancestors(id: employer.id, target: :users)
+            result = employer_adapter.association(id: employer.id, target: :users)
             expect(result.length).to eq 2
             expect(result.first.is_a? Horza::Entities::Single).to be true
             expect(result.first.to_hash).to eq HorzaSpec::User.order('id DESC').first.attributes
@@ -315,26 +315,25 @@ describe Horza do
 
         context 'invalid ancestry' do
           it 'throws error' do
-            expect { employer_adapter.ancestors(id: employer.id, target: :user) }.to raise_error Horza::Errors::InvalidAncestry
+            expect { employer_adapter.association(id: employer.id, target: :user) }.to raise_error Horza::Errors::InvalidAncestry
           end
         end
 
         context 'valid ancestry with no saved childred' do
           let(:employer2) { HorzaSpec::Employer.create }
           it 'returns empty collection error' do
-            expect(employer_adapter.ancestors(id: employer2.id, target: :users).empty?).to be true
+            expect(employer_adapter.association(id: employer2.id, target: :users).empty?).to be true
           end
         end
 
         context 'valid ancestry with no saved parent' do
           let(:user2) { HorzaSpec::User.create }
           it 'returns nil' do
-            expect(user_adapter.ancestors(id: user2.id, target: :employer)).to be nil
+            expect(user_adapter.association(id: user2.id, target: :employer)).to be nil
           end
         end
 
         context 'with options' do
-          let(:employer) { HorzaSpec::Employer.create }
           let(:turner_total) { 25 }
           let(:other_total) { 20 }
           let(:conditions) { { last_name: 'Turner' } }
@@ -346,7 +345,39 @@ describe Horza do
 
           context 'limit' do
             it 'limits response' do
+              expect(employer_adapter.association(id: employer.id, target: :users, limit: 10).length).to eq 10
+            end
+          end
 
+          context 'conditions' do
+            it 'only returns matches' do
+              expect(employer_adapter.association(id: employer.id, target: :users, conditions: conditions).length).to eq turner_total
+            end
+          end
+
+          context 'offset' do
+            it 'offsets response' do
+              expect(employer_adapter.association(id: employer.id, target: :users, conditions: conditions, offset: 10).length).to eq turner_total - 10
+            end
+          end
+
+          context 'order' do
+            it 'orders response' do
+              horza_response =  employer_adapter.association(id: employer.id, target: :users, conditions: conditions, order: { id: :asc })
+              ar_response = HorzaSpec::User.where(conditions).order('id asc')
+              expect(horza_response.first.id).to eq ar_response.first.id
+              expect(horza_response.last.id).to eq ar_response.last.id
+            end
+          end
+
+          context 'eager_load' do
+            context 'simple' do
+              it 'works as expected' do
+                horza_response =  employer_adapter.association(id: employer.id, target: :users, conditions: conditions, order: { id: :asc }, eager_load: true)
+                ar_response = HorzaSpec::User.where(conditions).order('id asc')
+                expect(horza_response.first.id).to eq ar_response.first.id
+                expect(horza_response.last.id).to eq ar_response.last.id
+              end
             end
           end
         end
@@ -362,7 +393,14 @@ describe Horza do
         end
 
         it 'returns the correct ancestor' do
-          expect(user_adapter.ancestors(id: user.id, target: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
+          expect(user_adapter.association(id: user.id, target: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
+        end
+
+        context 'with eager loading' do
+          it 'works as expected' do
+            horza_response =  user_adapter.association(id: user.id, target: :sports_cars, via: [:employer], order: { id: :asc }, eager_load: true)
+            expect(horza_response.first.id).to eq sportscar.id
+          end
         end
       end
     end

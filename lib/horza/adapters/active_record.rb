@@ -55,17 +55,17 @@ module Horza
         end
       end
 
-      def ancestors(options = {})
+      def association(options = {})
         run_and_convert_exceptions do
           options = Options.new(options)
 
-          base = @context.find(options.id)
-          base = base.includes(options.eager_hash) if options.eager_load?
+          base = @context
+          base = base.includes(options.eager_args) if options.eager_load?
+          base = base.find(options.id)
 
           result = walk_family_tree(base, options)
           return nil unless result
 
-          # result = query(options, result)
           collection?(result) ? entity_class(query(options, result)) : entity_class(result.attributes)
         end
       end
@@ -85,7 +85,7 @@ module Horza
         result = base.where(options.conditions) if options.conditions
         result = result.order(base.arel_table[options.order_field].send(options.order_direction))
         result = result.limit(options.limit) if options.limit
-        result = result.limit(options.offset) if options.offset
+        result = result.offset(options.offset) if options.offset
         result
       end
 

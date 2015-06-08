@@ -34,7 +34,8 @@ describe Horza::Adapters::Options do
         limit: 20,
         offset: 10,
         target: :sports_cars,
-        via: [:employer]
+        via: [:employer],
+        eager_load: true
       }
     end
 
@@ -72,6 +73,85 @@ describe Horza::Adapters::Options do
         let(:options) { { conditions: { last_name: 'Turner' } } }
         it 'defaults to desc' do
           expect(subject.order_direction).to eq(:desc)
+        end
+      end
+    end
+
+    context '#eager_load?' do
+      context 'when eager_load is true' do
+        it 'returns true' do
+          expect(subject.eager_load?).to be true
+        end
+      end
+
+      context 'when eager_load is not set' do
+        let(:options) { { conditions: { last_name: 'Turner' } } }
+        it 'returns false' do
+          expect(subject.eager_load?).to be false
+        end
+      end
+    end
+
+    context '#eager_args' do
+      context 'when eager_load is false' do
+        let(:options) { { conditions: { last_name: 'Turner' } } }
+        it 'raises error' do
+          expect { subject.eager_args }.to raise_error Horza::Errors::InvalidOption
+        end
+      end
+
+      context 'simple relation' do
+        let(:options) do
+          {
+            id: 999,
+            target: :users,
+            eager_load: true
+          }
+        end
+        it 'returns target' do
+          expect(subject.eager_args).to eq :users
+        end
+      end
+
+      context '1 via' do
+        let(:options) do
+          {
+            id: 999,
+            target: :sports_cars,
+            via: [:employer],
+            eager_load: true
+          }
+        end
+        it 'returns target as value, via as key' do
+          expect(subject.eager_args).to eq(employer: :sports_cars)
+        end
+      end
+
+      context '2 vias' do
+        let(:options) do
+          {
+            id: 999,
+            target: :sports_cars,
+            via: [:user, :employer],
+            eager_load: true
+          }
+        end
+        it 'returns target as value, final as key, nested in first via' do
+          expect(subject.eager_args).to eq(user: { employer: :sports_cars })
+        end
+      end
+
+      context '3 vias' do
+        let(:options) do
+          {
+            id: 999,
+            target: :sports_cars,
+            via: [:app, :user, :employer],
+            eager_load: true
+          }
+        end
+        it 'returns target as value, final as key, nested in first via' do
+          expect(subject.eager_args).to eq(app: { user: { employer: :sports_cars } })
         end
       end
     end
