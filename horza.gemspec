@@ -2,7 +2,7 @@ $:.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
   s.name = 'horza'
-  s.version = '0.3.0'
+  s.version = '0.3.1'
   s.platform = Gem::Platform::RUBY
   s.authors = ['Blake Turner']
   s.description = 'Horza is a shapeshifter that provides common inputs and outputs for your ORM'
