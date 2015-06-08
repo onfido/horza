@@ -50,7 +50,7 @@ module Horza
       def delete!(id)
         run_and_convert_exceptions do
           record = @context.find(id)
-          record.destroy!
+          record.destroy
           true
         end
       end
