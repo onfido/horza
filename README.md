@@ -31,6 +31,20 @@ user.update!(options) # Update record - raise error on fail
 user.delete(options) # Delete record - return nil on fail
 user.delete!(options) # Delete record - raise error on fail
 user.association(target: :employer, via: []) # Traverse association
+
+conditions = { last_name: 'Turner' }
+
+# Ordering
+user.find_all(conditions: conditions, order: { last_name: :desc })
+
+# Limiting
+user.find_all(conditions: conditions, limit: 20)
+
+# Offset
+user.find_all(conditions: conditions, offset: 50)
+
+# Eager loading associations
+user.association(target: :sports_cars, via: [:employer], conditions: { make: 'Audi' }, eager_load: true)
 ```
 
 ## Options
@@ -54,22 +68,6 @@ Key | Type | Details
 `id` | Integer | The id of the root object
 `target` | Symbol | The target of the association - ie. employer.users would have a target of :users
 `eager_load` | Boolean | Whether to eager_load the association
-
-```ruby
-conditions = { last_name: 'Turner' }
-
-# Ordering
-user.find_all(conditions: conditions, order: { last_name: :desc })
-
-# Limiting
-user.find_all(conditions: conditions, limit: 20)
-
-# Offset
-user.find_all(conditions: conditions, offset: 50)
-
-# Eager loading associations
-user.association(target: :sports_cars, via: [:employer], conditions: { make: 'Audi' }, eager_load: true)
-```
 
 ## Outputs
 
