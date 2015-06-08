@@ -44,7 +44,7 @@ user.find_all(conditions: conditions, limit: 20)
 user.find_all(conditions: conditions, offset: 50)
 
 # Eager loading associations
-user.association(target: :sports_cars, via: [:employer], conditions: { make: 'Audi' }, eager_load: true)
+employer.association(target: :users, eager_load: true)
 ```
 
 ## Options
