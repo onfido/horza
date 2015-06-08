@@ -30,7 +30,7 @@ module Horza
 
       def eager_args
         raise ::Horza::Errors::InvalidOption.new('You must pass eager_load: true and defined a target') unless eager_load? && target
-        return target unless via
+        return target unless via && via.present?
 
         via.reverse.reduce({}) do |hash, table|
           if hash.empty?
