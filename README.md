@@ -38,7 +38,7 @@ user.association(target: :employer, via: []) # Traverse association
 **Base Options**
 
 Key | Type | Details
-___ | ____ | _______
+--- | ---- | -------
 `conditions` | Hash | Key value pairs for the query
 `order` | Hash | { `field` => `:asc`/`:desc` }
 `limit` | Integer | Number of records to return
@@ -50,7 +50,7 @@ ___ | ____ | _______
 **Association Options**
 
 Key | Type | Details
-___ | ____ | _______
+--- | ---- | -------
 `id` | Integer | The id of the root object
 `target` | Symbol | The target of the association - ie. employer.users would have a target of :users
 `eager_load` | Boolean | Whether to eager_load the association
