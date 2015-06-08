@@ -3,6 +3,7 @@ module Horza
     class AbstractAdapter
       extend ::Horza::Adapters::ClassMethods
       include ::Horza::Adapters::InstanceMethods
+      extend ActiveSupport::DescendantsTracker
 
       attr_reader :context
 
@@ -40,7 +41,7 @@ module Horza
         not_implemented_error
       end
 
-      def ancestors(options = {})
+      def association(options = {})
         not_implemented_error
       end
 

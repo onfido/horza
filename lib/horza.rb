@@ -1,5 +1,6 @@
 require 'horza/adapters/class_methods'
 require 'horza/adapters/instance_methods'
+require 'horza/adapters/options'
 require 'horza/adapters/abstract_adapter'
 require 'horza/adapters/active_record'
 require 'horza/core_extensions/string'
@@ -8,7 +9,7 @@ require 'horza/entities/collection'
 require 'horza/entities'
 require 'horza/configuration'
 require 'horza/errors'
-require 'active_support'
+require 'active_support/inflections'
 
 module Horza
   extend Configuration
@@ -16,6 +17,10 @@ module Horza
   class << self
     def descendants_map(klass)
       klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
+    end
+
+    def adapt(klass)
+      adapter.new(klass)
     end
   end
 end
