@@ -42,6 +42,14 @@ else
       belongs_to :employer
     end
   end
+
+  class SimpleRecord < ActiveRecord::Base
+  end
+
+  module Lazy
+    class LazyRecord  < ActiveRecord::Base
+    end
+  end
 end
 
 describe Horza do
@@ -60,8 +68,22 @@ describe Horza do
   end
 
   context '#context_for_entity' do
-    it 'Returns correct class' do
-      expect(Horza.adapter.context_for_entity(:user)).to eq HorzaSpec::User
+    context 'when model exists' do
+      it 'Returns correct class' do
+        expect(Horza.adapter.context_for_entity(:simple_record)).to eq SimpleRecord
+      end
+    end
+
+    context 'when model exists in namespace' do
+      it 'Returns correct class' do
+        expect(Horza.adapter.context_for_entity(:user)).to eq HorzaSpec::User
+      end
+    end
+
+    context 'when model does not exist' do
+      it 'throws error class' do
+        expect { Horza.adapter.context_for_entity(:not_a_thing) }.to raise_error Horza::Errors::NoContextForEntity
+      end
     end
 
     context 'in development mode' do
@@ -75,8 +97,40 @@ describe Horza do
       after do
         Horza.reset
       end
-      it 'Returns correct class' do
-        expect(Horza.adapter.context_for_entity(:user)).to eq HorzaSpec::User
+
+      context 'when model exists' do
+        it 'Returns correct class' do
+          expect(Horza.adapter.context_for_entity(:simple_record)).to eq SimpleRecord
+        end
+      end
+
+      context 'when model does not exist' do
+        it 'throws error class' do
+          expect { Horza.adapter.context_for_entity(:not_a_thing) }.to raise_error Horza::Errors::NoContextForEntity
+        end
+      end
+
+      context 'when model exists but has been lazy loaded' do
+        context 'without namespace' do
+          before do
+            Object.send(:remove_const, :SimpleRecord)
+          end
+
+          it 'lazy loads' do
+            expect(Horza.adapter.context_for_entity(:simple_record).to_s).to eq 'SimpleRecord'
+          end
+        end
+
+        context 'within namespace' do
+          before do
+            Lazy.send(:remove_const, :LazyRecord)
+            Object.send(:remove_const, :Lazy)
+          end
+
+          it 'lazy loads' do
+            expect(Horza.adapter.context_for_entity(:lazy_record).to_s).to eq 'Lazy::LazyRecord'
+          end
+        end
       end
     end
   end

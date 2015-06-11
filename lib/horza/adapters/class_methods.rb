@@ -14,7 +14,25 @@ module Horza
       end
 
       def context_for_entity(entity)
-        entity_context_map[entity]
+        context = entity_context_map[entity]
+        return context if context
+
+        lazy_load_model(entity)
+      end
+
+      def lazy_load_model(entity)
+        raise Horza::Errors::NoContextForEntity.new unless Horza.configuration.development_mode
+        const = entity.to_s.camelize
+
+        [Object].concat(Horza.configuration.namespaces).each do |namespace|
+          begin
+            return namespace.const_get(const)
+          rescue NameError
+            next
+          end
+        end
+
+        raise Horza::Errors::NoContextForEntity.new
       end
 
       def not_implemented_error

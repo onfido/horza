@@ -21,6 +21,28 @@ describe Horza do
       end
     end
   end
+
+  context '#configuration #namespaces' do
+    context 'when namespaces are not configured' do
+      before { Horza.reset }
+      after { Horza.reset }
+      it 'returns empty array' do
+        expect(Horza.configuration.namespaces.is_a? Array).to be true
+        expect(Horza.configuration.namespaces.empty?).to be true
+      end
+    end
+
+    context 'when namespaces are configured' do
+      before do
+        Horza.reset
+        Horza.configure { |config| config.namespaces = [HorzaSpec] }
+      end
+      after { Horza.reset }
+      it 'returns configured namespaces class' do
+        expect(Horza.configuration.namespaces).to eq [HorzaSpec]
+      end
+    end
+  end
 end
 
 describe Horza::Adapters::Options do

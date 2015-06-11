@@ -23,5 +23,8 @@ module Horza
 
     class InvalidOption < StandardError
     end
+
+    class NoContextForEntity < StandardError
+    end
   end
 end

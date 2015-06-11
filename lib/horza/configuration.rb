@@ -26,6 +26,10 @@ module Horza
   end
 
   class Config
-    attr_accessor :adapter, :development_mode
+    attr_accessor :adapter, :development_mode, :namespaces
+
+    def namespaces
+      return @namespaces || []
+    end
   end
 end

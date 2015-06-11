@@ -2,12 +2,13 @@ module Horza
   module Adapters
     class ActiveRecord < AbstractAdapter
       INVALID_ANCESTRY_MSG = 'Invalid relation. Ensure that the plurality of your associations is correct.'
+      CONTEXT_NAMESPACE = ::ActiveRecord::Base
 
       class << self
         def entity_context_map
           # Rails doesn't preload classes in development mode, caching doesn't make sense
-          return ::Horza.descendants_map(::ActiveRecord::Base) if ::Horza.configuration.development_mode
-          @map ||= ::Horza.descendants_map(::ActiveRecord::Base)
+          return ::Horza.descendants_map(CONTEXT_NAMESPACE) if ::Horza.configuration.development_mode
+          @map ||= ::Horza.descendants_map(CONTEXT_NAMESPACE)
         end
 
         def expected_errors_map
