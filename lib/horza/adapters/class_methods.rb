@@ -22,11 +22,11 @@ module Horza
 
       def lazy_load_model(entity)
         raise Horza::Errors::NoContextForEntity.new unless Horza.configuration.development_mode
-        const = entity.to_s.camelize
+        lazy_const = entity.to_s.camelize
 
         [Object].concat(Horza.configuration.namespaces).each do |namespace|
           begin
-            return namespace.const_get(const)
+            return namespace.const_get(lazy_const) if (namespace.const_get(lazy_const) < Horza.adapter::CONTEXT_NAMESPACE)
           rescue NameError
             next
           end
