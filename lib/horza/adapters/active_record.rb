@@ -14,7 +14,8 @@ module Horza
         def expected_errors_map
           {
             ::ActiveRecord::RecordNotFound => Horza::Errors::RecordNotFound,
-            ::ActiveRecord::RecordInvalid => Horza::Errors::RecordInvalid
+            ::ActiveRecord::RecordInvalid => Horza::Errors::RecordInvalid,
+            ::ActiveRecord::UnknownAttributeError => Horza::Errors::UnknownAttributeError
           }
         end
       end

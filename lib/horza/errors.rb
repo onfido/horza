@@ -26,5 +26,8 @@ module Horza
 
     class NoContextForEntity < StandardError
     end
+
+    class UnknownAttributeError < StandardError
+    end
   end
 end
