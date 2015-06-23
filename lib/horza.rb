@@ -22,5 +22,13 @@ module Horza
     def adapt(klass)
       adapter.new(klass)
     end
+
+    def single(params = {})
+      Horza::Entities::Single.new(params)
+    end
+
+    def collection(items = [])
+      Horza::Entities::Collection.new(items)
+    end
   end
 end

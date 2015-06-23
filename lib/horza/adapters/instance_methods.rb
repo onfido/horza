@@ -18,6 +18,10 @@ module Horza
         run_quietly { create!(options) }
       end
 
+      def create_as_child(parent_id, options = {})
+        run_quietly { create_as_child!(parent_id, options) }
+      end
+
       def delete(id)
         run_quietly { delete!(id) }
       end

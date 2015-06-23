@@ -274,6 +274,63 @@ describe Horza do
       end
     end
 
+    describe '#create_as_child' do
+      let(:employer) { HorzaSpec::Employer.create }
+      let(:parent) do
+        {
+          id: employer.id,
+          klass: :employer
+        }
+      end
+      let(:action) { user_adapter.create_as_child(parent, last_name: last_name) }
+
+      context 'when parameters are valid' do
+        it 'creates the record' do
+          expect { action }.to change(HorzaSpec::User, :count).by(1)
+        end
+
+        it 'returns the entity' do
+          expect(action.last_name).to eq last_name
+          expect(action.employer_id).to eq employer.id
+        end
+      end
+
+      context 'when parameters are invalid' do
+        let(:parent) do
+          {
+            id: 999,
+            klass: :employer
+          }
+        end
+
+        it 'does not create the record' do
+          expect { action }.to change(HorzaSpec::User, :count).by(0)
+        end
+
+        it 'returns nil' do
+          expect(action).to be nil
+        end
+      end
+    end
+
+    describe '#create_as_child!' do
+      let(:employer) { HorzaSpec::Employer.create }
+      let(:action) { user_adapter.create_as_child!(parent, last_name: last_name) }
+
+      context 'when parameters are invalid' do
+        let(:parent) do
+          {
+            id: 999,
+            klass: :employer
+          }
+        end
+
+        it 'throws error' do
+          expect { action }.to raise_error Horza::Errors::RecordNotFound
+        end
+      end
+    end
+
     describe '#update' do
       let(:customer) { HorzaSpec::Customer.create(last_name: last_name) }
 

@@ -40,6 +40,13 @@ module Horza
         end
       end
 
+      def create_as_child!(parent_args, options = {})
+        run_and_convert_exceptions do
+          parent = Horza.adapter.context_for_entity(parent_args[:klass]).find(parent_args[:id])
+          create!(options.merge(parent_args[:klass] => parent))
+        end
+      end
+
       def update!(id, options = {})
         run_and_convert_exceptions do
           record = @context.find(id)

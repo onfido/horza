@@ -21,17 +21,31 @@ user = Horza.adapt(User)
 # Examples
 user.get(id) # Find by id - Return nil on fail
 user.get!(id) # Find by id - Error on fail
+
 user.find_first(options) # Find 1 user - Orders by id desc by default - Return nil on fail
 user.find_first!(options) # Find 1 user - Orders by id desc by default - Error nil on fail
+
 user.find_all(options) # Find all users that match parameters
+
 user.create(options) # Create record - return nil on fail
 user.create!(options) # Create record - raise error on fail
+
 user.update(options) # Update record - return nil on fail
 user.update!(options) # Update record - raise error on fail
+
 user.delete(options) # Delete record - return nil on fail
 user.delete!(options) # Delete record - raise error on fail
+
 user.association(target: :employer, via: []) # Traverse association
 
+# Special case: create a child record when mass-assignment is disabled for parent instance_methods
+# klass is a symbol version of your model name, ie Employer is :employer, SportsCar is :sports_car
+parent = { id: parent_id, klass: :employer }
+
+user.create_as_child(parent, options) # Create record - return nil on fail
+user.create_as_child!(parent, options) # Create record - raise error on fail
+
+# With args
 conditions = { last_name: 'Turner' }
 
 # Ordering

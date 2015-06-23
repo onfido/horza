@@ -33,6 +33,10 @@ module Horza
         not_implemented_error
       end
 
+      def create_as_child!(parent, options = {})
+        not_implemented_error
+      end
+
       def delete!(id)
         not_implemented_error
       end
