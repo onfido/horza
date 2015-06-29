@@ -14,7 +14,7 @@ module Horza
       end
 
       def collection_entities
-        @singles ||= ::Horza.descendants_map(::Horza::Entities::Collection)
+        @collections ||= ::Horza.descendants_map(::Horza::Entities::Collection)
       end
     end
   end

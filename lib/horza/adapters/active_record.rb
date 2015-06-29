@@ -75,7 +75,7 @@ module Horza
           result = walk_family_tree(base, options)
           return nil unless result
 
-          collection?(result) ? entity_class(query(options, result)) : entity_class(result.attributes)
+          options.target.to_s.plural? ? entity_class(query(options, result)) : entity_class(result.attributes)
         end
       end
 
