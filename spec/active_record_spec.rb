@@ -527,7 +527,7 @@ describe Horza do
 
       context '#each' do
         context 'when name is of ancestry type' do
-          it 'yields a Get::Entities::Single with each iteration' do
+          it 'yields a Horza::Entities::Single with each iteration' do
             subject.each do |member|
               expect(member.is_a? Horza::Entities::Single).to be true
             end
@@ -537,7 +537,7 @@ describe Horza do
 
       context '#map' do
         context 'when name is of ancestry type' do
-          it 'yields a Get::Entities::Single with each iteration, returns array' do
+          it 'yields a Horza::Entities::Single with each iteration, returns array' do
             map = subject.map(&:id)
             expect(map.is_a? Array).to be true
             expect(map.length).to eq 3
@@ -547,10 +547,19 @@ describe Horza do
 
       context '#collect' do
         context 'when name is of ancestry type' do
-          it 'yields a Get::Entities::Single with each iteration, returns array' do
+          it 'yields a Horza::Entities::Single with each iteration, returns array' do
             map = subject.collect(&:id)
             expect(map.is_a? Array).to be true
             expect(map.length).to eq 3
+          end
+        end
+      end
+
+      context '#pop' do
+        context 'when name is of ancestry type' do
+          it 'returns the last collection item as a Horza::Entities::Single' do
+            entity = subject.pop
+            expect(entity.is_a? Horza::Entities::Single).to be true
           end
         end
       end

@@ -14,7 +14,7 @@ module Horza
       def method_missing(method, &block)
         if [:length, :size, :empty?, :present?].include? method
           @collection.send(method)
-        elsif [:first, :last].include? method
+        elsif [:first, :last, :pop].include? method
           singular_entity(@collection.send(method))
         elsif [:each, :map, :collect]
           enum_method(method, &block)
