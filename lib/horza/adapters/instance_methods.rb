@@ -41,7 +41,7 @@ module Horza
       def run_and_convert_exceptions(&block)
         block.call
       rescue *self.class.expected_errors => e
-        raise self.class.horza_error_from_orm_error(e.class)
+        raise self.class.horza_error_from_orm_error(e.class).new(e.message)
       end
 
       def entity_class(res = @context)

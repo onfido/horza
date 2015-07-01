@@ -33,14 +33,33 @@ describe Horza do
     end
 
     context 'when namespaces are configured' do
+      module HorzaNamespace
+      end
+
       before do
         Horza.reset
-        Horza.configure { |config| config.namespaces = [HorzaSpec] }
+        Horza.configure { |config| config.namespaces = [HorzaNamespace] }
       end
       after { Horza.reset }
       it 'returns configured namespaces class' do
-        expect(Horza.configuration.namespaces).to eq [HorzaSpec]
+        expect(Horza.configuration.namespaces).to eq [HorzaNamespace]
       end
+    end
+  end
+end
+
+describe Horza::Entities::Single do
+  subject { Horza::Entities::Single.new(first_name: 'Blake') }
+
+  describe '#generic_getter' do
+    it 'returns the value of the requested attributes' do
+      expect(subject.generic_getter(:first_name)).to eq 'Blake'
+    end
+  end
+
+  describe '#read_attribute_for_serialization' do
+    it 'returns the value of the requested attributes' do
+      expect(subject.read_attribute_for_serialization(:first_name)).to eq 'Blake'
     end
   end
 end
