@@ -76,7 +76,7 @@ describe Horza::Adapters::Options do
         offset: 10,
         target: :sports_cars,
         via: [:employer],
-        eager_load: true
+        eager_load: true,
       }
     end
 

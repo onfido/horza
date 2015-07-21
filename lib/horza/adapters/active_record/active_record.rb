@@ -32,6 +32,13 @@ module Horza
         run_and_convert_exceptions { entity_class(query(options)) }
       end
 
+      def join(options = {})
+        run_and_convert_exceptions do
+          sql = ArelJoin.sql(self.context, options)
+          entity_class(::ActiveRecord::Base.connection.exec_query(sql).to_a)
+        end
+      end
+
       def create!(options = {})
         run_and_convert_exceptions do
           record = @context.new(options)

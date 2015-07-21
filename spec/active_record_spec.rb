@@ -7,8 +7,8 @@ else
 
   ActiveRecord::Migration.suppress_messages do
     ActiveRecord::Schema.define(:version => 0) do
-      create_table(:employers, force: true) {|t| t.string :name }
-      create_table(:users, force: true) {|t| t.string :first_name; t.string :last_name; t.references :employer; }
+      create_table(:employers, force: true) {|t| t.string :name; t.string :boss_email }
+      create_table(:users, force: true) {|t| t.string :first_name; t.string :last_name; t.string :email; t.references :employer; }
       create_table(:customers, force: true) {|t| t.string :first_name; t.string :last_name; }
       create_table(:sports_cars, force: true) {|t| t.string :make; t.references :employer; }
       create_table(:dummy_models, force: true) {|t| t.string :key }
@@ -65,6 +65,8 @@ describe Horza do
   after do
     HorzaSpec::User.delete_all
     HorzaSpec::Employer.delete_all
+    HorzaSpec::Customer.delete_all
+    HorzaSpec::SportsCar.delete_all
   end
 
   context '#context_for_entity' do
@@ -512,6 +514,156 @@ describe Horza do
             horza_response =  user_adapter.association(id: user.id, target: :sports_cars, via: [:employer], order: { id: :asc }, eager_load: true)
             expect(horza_response.first.id).to eq sportscar.id
           end
+        end
+      end
+    end
+
+    context '#join' do
+      let(:simple) do
+        {
+          with: :employers,
+          on: { employer_id: :id } # field for adapted model => field for join model
+        }
+      end
+
+      let(:complex_predicate) do
+        {
+          with: :employers,
+          on: [
+            { employer_id: :id }, # field for adapted model => field for join model
+            { email: :boss_email }, # field for adapted model => field for join model
+          ],
+          fields: {
+            users: [:id, :email],
+            employers: [:boss_email]
+          }
+        }
+      end
+
+      let(:fields) do
+        {
+          fields: {
+            users: [:id, :first_name, :last_name],
+            employers: [{id: :employer_id}, :name]
+          }
+        }.merge(simple)
+      end
+
+      let(:conditions) do
+        {
+          conditions: {
+            users: { last_name: 'Turner'  },
+            employers: { name: 'Corporation ltd.' }
+          }
+        }.merge(fields)
+      end
+
+      context 'without conditions' do
+        context 'when one join record exists' do
+          let!(:employer) { HorzaSpec::Employer.create(name: 'Corporation ltd.', boss_email: 'boss@boss.com') }
+          let!(:user) { HorzaSpec::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
+
+          context 'without fields' do
+            it 'returns joined record' do
+              result = user_adapter.join(simple)
+              expect(result.length).to eq 1
+
+              expect(result.first.first_name).to eq user.first_name
+              expect(result.first.last_name).to eq user.last_name
+              expect(result.first.email).to eq user.email
+              expect(result.first.boss_email).to eq employer.boss_email
+              expect(result.first.name).to eq employer.name
+            end
+          end
+
+          context 'with fields' do
+            it 'returns joined record and the specified fields' do
+              result = user_adapter.join(fields)
+              expect(result.length).to eq 1
+
+              record = result.first
+
+              expect(record.id).to eq user.id
+              expect(record.first_name).to eq user.first_name
+              expect(record.last_name).to eq user.last_name
+              expect(record.name).to eq employer.name
+              expect(record.employer_id).to eq employer.id
+
+              expect(record.respond_to?(:email)).to be false
+            end
+          end
+
+          context 'complex predicate' do
+            let!(:match_user) { HorzaSpec::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'boss@boss.com') }
+            let!(:match_user2) { HorzaSpec::User.create(employer: employer, first_name: 'Helen', last_name: 'Jones', email: 'boss@boss.com') }
+            it 'returns joined records and the specified fields' do
+              result = user_adapter.join(complex_predicate)
+              expect(result.length).to eq 2
+
+              expect(result.first.id).to eq match_user.id
+              expect(result.first.email).to eq match_user.email
+              expect(result.first.boss_email).to eq employer.boss_email
+            end
+
+          end
+        end
+
+        context 'when no join record exists' do
+          let!(:employer) { HorzaSpec::Employer.create(name: 'Corporation ltd.') }
+          let!(:user) { HorzaSpec::User.create(employer_id: 9999, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
+
+          it 'returns an empty collection' do
+            result = user_adapter.join(simple)
+            expect(result.length).to eq 0
+          end
+        end
+
+        context 'when multiple join records exists' do
+          let!(:employer) { HorzaSpec::Employer.create(name: 'Corporation ltd.') }
+          let!(:user) { HorzaSpec::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+          let!(:user2) { HorzaSpec::User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
+          let!(:user3) { HorzaSpec::User.create(employer: employer, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+
+          it 'returns an empty collection' do
+            result = user_adapter.join(simple)
+            expect(result.length).to eq 3
+          end
+        end
+      end
+
+      context 'with conditions' do
+        let!(:employer) { HorzaSpec::Employer.create(name: 'Corporation ltd.') }
+        let!(:employer2) { HorzaSpec::Employer.create(name: 'BigBucks ltd.') }
+        let!(:user) { HorzaSpec::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+        let!(:user2) { HorzaSpec::User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
+        let!(:user3) { HorzaSpec::User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+
+        it 'returns only the joins that match the conditions' do
+          result = user_adapter.join(conditions)
+          expect(result.length).to eq 1
+          expect(result.first.id).to eq user.id
+        end
+      end
+
+      context 'limits/offset' do
+        let!(:employer) { HorzaSpec::Employer.create(name: 'Corporation ltd.') }
+        let!(:employer2) { HorzaSpec::Employer.create(name: 'BigBucks ltd.') }
+        let!(:user) { HorzaSpec::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+        let!(:user2) { HorzaSpec::User.create(employer: employer, first_name: 'Adam', last_name: 'Turner', email: 'email@boots.com') }
+        let!(:user3) { HorzaSpec::User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+
+        it 'limits the joins that match the conditions' do
+          params = conditions.merge(limit: 1)
+          result = user_adapter.join(params)
+          expect(result.length).to eq 1
+          expect(result.first.id).to eq user.id
+        end
+
+        it 'offsets the joins that match the conditions' do
+          params = conditions.merge(offset: 1)
+          result = user_adapter.join(params)
+          expect(result.length).to eq 1
+          expect(result.first.id).to eq user2.id
         end
       end
     end

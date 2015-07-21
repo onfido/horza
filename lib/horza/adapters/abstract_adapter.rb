@@ -29,6 +29,10 @@ module Horza
         not_implemented_error
       end
 
+      def join(options = {})
+        not_implemented_error
+      end
+
       def create!(options = {})
         not_implemented_error
       end

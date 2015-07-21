@@ -16,7 +16,8 @@ end
 **Get Adapter for your ORM Object**
 ```ruby
 # ActiveRecord Example
-user = Horza.adapt(User)
+# Don't worry, We don't actually call things horza_users in our codebase, this is just for emphasis
+horza_user = Horza.adapt(User)
 
 # Examples
 user.get(id) # Find by id - Return nil on fail
@@ -59,29 +60,48 @@ user.find_all(conditions: conditions, offset: 50)
 
 # Eager loading associations
 employer.association(target: :users, eager_load: true)
+
+# Joins are slightly more complex
+join_params = {
+  with: :employers,
+  on: { employer_id: :id }, # field for adapted model => field for join model
+  fields: {
+    users: [:first_name, :last_name, :email],
+    employers: [:company_name, :address, :phone],
+  },
+  conditions: {
+    users: { last_name: 'Turner'  },
+    employers: { company_name: 'Corporation ltd.' }
+  },
+  limit: 20,
+  offset: 5,
+}
+horza_user.join(join_params)
+
+# You can join on multiple fields by passing an array
+join_params = {
+  with: :employers,
+  on: [
+    { employer_id: :id }, # field for adapted model => field for join model
+    { email: :email }, # field for adapted model => field for join model
+  ]
+}
+horza_user.join(join_params)
+
+# You can also alias field names
+join_params = {
+  with: :employers,
+  on: [
+    { employer_id: :id }, # field for adapted model => field for join model
+    { email: :email }, # field for adapted model => field for join model
+  ],
+  fields: {
+    users: [:id, :last_name, :email],
+    employers: [{id: :employer_id}], # Fieldname in db => alias for output
+  },
+}
+horza_user.join(join_params)
 ```
-
-## Options
-
-**Base Options**
-
-Key | Type | Details
---- | ---- | -------
-`conditions` | Hash | Key value pairs for the query
-`order` | Hash | { `field` => `:asc`/`:desc` }
-`limit` | Integer | Number of records to return
-`offset` | Integer | Number of records to offset
-`id` | Integer | The id of the root object (associations only)
-`target` | Symbol | The target of the association - ie. employer.users would have a target of :users (associations only)
-`eager_load` | Boolean | Whether to eager_load the association (associations only)
-
-**Association Options**
-
-Key | Type | Details
---- | ---- | -------
-`id` | Integer | The id of the root object
-`target` | Symbol | The target of the association - ie. employer.users would have a target of :users
-`eager_load` | Boolean | Whether to eager_load the association
 
 ## Outputs
 
@@ -91,7 +111,7 @@ Collection entities behave like arrays.
 
 ```ruby
 # Singular Entity
-result = user.find_first(first_name: 'Blake')
+result = horza_user.find_first(first_name: 'Blake')
 
 result # => {"id"=>1, "first_name"=>"Blake", "last_name"=>"Turner", "employer_id"=>1}
 result.class.name # => "Horza::Entities::Single"
@@ -100,7 +120,7 @@ result.id # => 1
 result.id? # => true
 
 # Collection Entity
-result = user.find_all(last_name: 'Turner')
+result = horza_user.find_all(last_name: 'Turner')
 
 result.class.name # => "Horza::Entities::Collection"
 result.length # => 1
