@@ -45,7 +45,7 @@ module Horza
       end
 
       def entity_class(res = @context)
-        collection?(res) ? ::Horza::Entities.collection_entity_for(entity_symbol).new(res) : ::Horza::Entities.single_entity_for(entity_symbol).new(res)
+        collection?(res) ? ::Horza::Entities.collection_entity_for(entity_symbol, res) : ::Horza::Entities.single_entity_for(entity_symbol, res)
       end
 
       def entity_symbol

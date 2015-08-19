@@ -72,7 +72,7 @@ describe Horza do
   context '#context_for_entity' do
     context 'when model exists' do
       it 'Returns correct class' do
-        expect(Horza.adapter.context_for_entity(:simple_record)).to eq SimpleRecord
+        expect(Horza.adapter.context_for_entity(:simple_record).to_s).to eq 'SimpleRecord'
       end
     end
 
@@ -102,7 +102,7 @@ describe Horza do
 
       context 'when model exists' do
         it 'Returns correct class' do
-          expect(Horza.adapter.context_for_entity(:simple_record)).to eq SimpleRecord
+          expect(Horza.adapter.context_for_entity(:simple_record).to_s).to eq 'SimpleRecord'
         end
       end
 
@@ -149,6 +149,7 @@ describe Horza do
 
   describe 'Queries' do
     let(:user) { HorzaSpec::User.create }
+    let(:single_entity_klass) { Horza::Entities::Single }
 
     describe '#get!' do
       context 'when user exists' do
@@ -675,13 +676,15 @@ describe Horza do
         3.times.map { HorzaSpec::User.create }
       end
 
+      let(:single_entity_klass) { Horza::Entities::SingleWithActiveModel }
+
       subject { Horza::Entities::Collection.new(members) }
 
       context '#each' do
         context 'when name is of ancestry type' do
           it 'yields a Horza::Entities::Single with each iteration' do
             subject.each do |member|
-              expect(member.is_a? Horza::Entities::Single).to be true
+              expect(member.is_a? single_entity_klass).to be true
             end
           end
         end
@@ -711,7 +714,7 @@ describe Horza do
         context 'when name is of ancestry type' do
           it 'returns the last collection item as a Horza::Entities::Single' do
             entity = subject.pop
-            expect(entity.is_a? Horza::Entities::Single).to be true
+            expect(entity.is_a? single_entity_klass).to be true
           end
         end
       end
@@ -726,7 +729,7 @@ describe Horza do
           end
 
           it 'returns Horza::Collection::Single' do
-            expect(TestNamespace::DummyModels.new([]).send(:singular_entity_class, dummy_model)).to eq Horza::Entities::Single
+            expect(TestNamespace::DummyModels.new([]).send(:singular_entity, dummy_model).is_a? single_entity_klass).to be true
           end
         end
 
@@ -742,7 +745,7 @@ describe Horza do
           end
 
           it 'returns the existing singular class' do
-            expect(TestNamespace::OtherDummyModels.new([]).send(:singular_entity_class, other_dummy_model)).to eq TestNamespace::OtherDummyModel
+            expect(TestNamespace::OtherDummyModels.new([]).send(:singular_entity, other_dummy_model).is_a? TestNamespace::OtherDummyModel).to be true
           end
         end
       end
