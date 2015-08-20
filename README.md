@@ -147,3 +147,9 @@ module CustomEntities
   end
 end
 ```
+
+## Active Model Semantics
+
+The returned entity for ActiveRecord adapter now include ActiveModel semantics. This type of
+entity SingleWithActiveModel can work with rails form helper and the submitted params will be
+grouped under params[:horza_entities_single_with_active_model].
