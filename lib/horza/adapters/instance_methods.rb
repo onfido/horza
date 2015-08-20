@@ -44,8 +44,9 @@ module Horza
         raise self.class.horza_error_from_orm_error(e.class).new(e.message)
       end
 
-      def entity_class(res = @context)
-        collection?(res) ? ::Horza::Entities.collection_entity_for(entity_symbol, res) : ::Horza::Entities.single_entity_for(entity_symbol, res)
+      def entity(res = @context)
+        collection?(res) ? ::Horza::Entities.collection_entity_for(entity_symbol, res) :
+          ::Horza::Entities.single_entity_for(entity_symbol, res)
       end
 
       def entity_symbol
