@@ -1,8 +1,8 @@
 module Horza
   module Entities
     class Collection
-      def initialize(collection, singular_entity = nil)
-        @collection, @singular_entity = collection, singular_entity
+      def initialize(collection)
+        @collection = collection
       end
 
       def [](index)
@@ -27,15 +27,11 @@ module Horza
         end
       end
 
-      def singular_entity(record)
-        attributes = record.respond_to?(:to_hash) ? record.to_hash : Horza.adapter.new(record).to_hash
-        singular_entity_class(record).new(attributes)
-      end
-
       # Collection classes have the form Horza::Entities::Users
       # Single output requires the form Horza::Entities::User
-      def singular_entity_class(record)
-        @singular_entity ||= ::Horza::Entities::single_entity_for(record.class.name.split('::').last.symbolize)
+      def singular_entity(record)
+        attributes = record.respond_to?(:to_hash) ? record.to_hash : Horza.adapter.new(record).to_hash
+        ::Horza::Entities::single_entity_for(record.class.name.split('::').last.symbolize, attributes)
       end
     end
   end

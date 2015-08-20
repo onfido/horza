@@ -5,6 +5,10 @@ module Horza
       CONTEXT_NAMESPACE = ::ActiveRecord::Base
 
       class << self
+        def single_entity_klass
+          ::Horza::Entities::SingleWithActiveModel
+        end
+
         def entity_context_map
           # Rails doesn't preload classes in development mode, caching doesn't make sense
           return ::Horza.descendants_map(CONTEXT_NAMESPACE) if ::Horza.configuration.development_mode
@@ -21,21 +25,21 @@ module Horza
       end
 
       def get!(id)
-        run_and_convert_exceptions { entity_class(@context.find(id).attributes) }
+        run_and_convert_exceptions { entity(@context.find(id).attributes) }
       end
 
       def find_first!(options = {})
-        run_and_convert_exceptions { entity_class(query(options).first!.attributes) }
+        run_and_convert_exceptions { entity(query(options).first!.attributes) }
       end
 
       def find_all(options = {})
-        run_and_convert_exceptions { entity_class(query(options)) }
+        run_and_convert_exceptions { entity(query(options)) }
       end
 
       def join(options = {})
         run_and_convert_exceptions do
           sql = ArelJoin.sql(self.context, options)
-          entity_class(::ActiveRecord::Base.connection.exec_query(sql).to_a)
+          entity(::ActiveRecord::Base.connection.exec_query(sql).to_a)
         end
       end
 
@@ -43,7 +47,7 @@ module Horza
         run_and_convert_exceptions do
           record = @context.new(options)
           record.save!
-          entity_class(record.attributes)
+          entity(record.attributes)
         end
       end
 
@@ -59,7 +63,7 @@ module Horza
           record = @context.find(id)
           record.assign_attributes(options)
           record.save!
-          entity_class(record.attributes)
+          entity(record.attributes)
         end
       end
 
@@ -82,7 +86,7 @@ module Horza
           result = walk_family_tree(base, options)
           return nil unless result
 
-          options.target.to_s.plural? ? entity_class(query(options, result)) : entity_class(result.attributes)
+          options.target.to_s.plural? ? entity(query(options, result)) : entity(result.attributes)
         end
       end
 
