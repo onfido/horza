@@ -15,7 +15,8 @@ module Horza
         if [:length, :size, :empty?, :present?].include? method
           @collection.send(method)
         elsif [:first, :last, :pop].include? method
-          singular_entity(@collection.send(method))
+          result = @collection.send(method)
+          singular_entity(result) unless result.nil?
         elsif [:each, :map, :collect]
           enum_method(method, &block)
         end
