@@ -21,7 +21,7 @@ module Horza
       end
 
       def lazy_load_model(entity)
-        raise Horza::Errors::NoContextForEntity.new unless Horza.configuration.development_mode
+        #raise Horza::Errors::NoContextForEntity.new unless Horza.configuration.development_mode
         lazy_const = entity.to_s.camelize
 
         [Object].concat(Horza.configuration.namespaces).each do |namespace|
