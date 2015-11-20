@@ -1,6 +1,8 @@
 module Horza
   module Entities
     class Collection
+      extend ActiveSupport::DescendantsTracker
+      
       def initialize(collection)
         @collection = collection
       end
