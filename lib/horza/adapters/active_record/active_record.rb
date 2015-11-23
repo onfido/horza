@@ -1,3 +1,5 @@
+require 'active_record'
+
 module Horza
   module Adapters
     class ActiveRecord < AbstractAdapter

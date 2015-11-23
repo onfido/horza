@@ -1,3 +1,5 @@
+require 'active_support/inflections'
+require 'active_support/descendants_tracker'
 require 'horza/adapters/class_methods'
 require 'horza/adapters/instance_methods'
 require 'horza/adapters/options'
@@ -11,8 +13,7 @@ require 'horza/entities/single_with_active_model'
 require 'horza/entities'
 require 'horza/configuration'
 require 'horza/errors'
-require 'active_support/inflections'
-require 'active_support/descendants_tracker'
+
 
 module Horza
   extend Configuration
