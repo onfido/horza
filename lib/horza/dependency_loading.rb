@@ -6,14 +6,23 @@ module Horza
     MissingFile = Class.new(Error)
 
     def resolve_dependency(entity_name)
+      # Return already loaded constant from memory if possible,
+      # otherwise search for a matching filename and try to load that.
+      constant = get_loaded_constant(entity_name)
+      return constant if !constant.nil?
+
+      resolve_from_file_paths(entity_name)
+    end
+
+    def resolve_from_file_paths(entity_name)
       file_path = search_for_file(entity_name)
 
-      constant_name = constant_name_for_path(file_path).first
+      resolved_name = constant_name_for_path(file_path).first
 
-      if constant_name.nil?
+      if resolved_name.nil?
         Error.new("No constant found for: #{entity_name.inspect}")
       else
-        ActiveSupport::Dependencies::Reference.safe_get(constant_name)
+        ActiveSupport::Dependencies::Reference.safe_get(resolved_name)
       end
     end
 
@@ -44,5 +53,13 @@ module Horza
         "Searched in: (#{Horza.constant_file_paths.map(&:inspect).join(', ')})"
       )
     end
+
+    def get_loaded_constant(entity_name)
+      constant_name = entity_name.camelize
+      if ActiveSupport::Dependencies.qualified_const_defined?(constant_name)
+        return ActiveSupport::Dependencies::Reference.get(constant_name)
+      end
+    end
+
   end
 end

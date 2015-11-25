@@ -25,6 +25,14 @@ describe Horza::DependencyLoading do
       expect { Horza::DependencyLoading.resolve_dependency("test_employer") }.to raise_error
     end
 
+    it "returns constant if already loaded" do
+      Object.const_set(:A, Class.new)
+
+      constant = Horza::DependencyLoading.resolve_dependency("a")
+      expect(constant).to eq A
+  
+      Object.send(:remove_const, :A)
+    end
 
     context "finds multiple matched constant_file_paths" do
 
