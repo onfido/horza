@@ -1,5 +1,8 @@
 require 'active_support/inflections'
 require 'active_support/descendants_tracker'
+require 'active_support/core_ext/module/delegation'
+require 'active_support/dependencies'
+require 'horza/dependency_loading'
 require 'horza/adapters/class_methods'
 require 'horza/adapters/instance_methods'
 require 'horza/adapters/options'
@@ -19,6 +22,8 @@ module Horza
   extend Configuration
 
   class << self
+    delegate :constant_file_paths, :clear_constant_file_paths, :constant_file_paths=,  to: :configuration
+    
     def descendants_map(klass)
       klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
     end
