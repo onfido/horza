@@ -26,10 +26,9 @@ module Horza
   end
 
   class Config
-    attr_accessor :adapter, :development_mode, :namespaces, :constant_file_paths
+    attr_accessor :adapter, :constant_file_paths
 
     def initialize
-      @namespaces = []
       @constant_file_paths = []
     end
 

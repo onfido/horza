@@ -24,9 +24,6 @@ module Horza
     class InvalidOption < StandardError
     end
 
-    class NoContextForEntity < StandardError
-    end
-
     class UnknownAttributeError < StandardError
     end
   end

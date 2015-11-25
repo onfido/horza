@@ -11,12 +11,6 @@ module Horza
           ::Horza::Entities::SingleWithActiveModel
         end
 
-        def entity_context_map
-          # Rails doesn't preload classes in development mode, caching doesn't make sense
-          return ::Horza.descendants_map(CONTEXT_NAMESPACE) if ::Horza.configuration.development_mode
-          @map ||= ::Horza.descendants_map(CONTEXT_NAMESPACE)
-        end
-
         def expected_errors_map
           {
             ::ActiveRecord::RecordNotFound => Horza::Errors::RecordNotFound,
