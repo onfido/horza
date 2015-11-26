@@ -1,6 +1,6 @@
 module Horza
   module Errors
-    class AdapterNotConfigured < StandardError
+    class AdapterError < StandardError
     end
 
     class MethodNotImplemented < StandardError

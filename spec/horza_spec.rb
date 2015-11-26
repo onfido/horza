@@ -1,27 +1,5 @@
 require 'spec_helper'
 
-describe Horza do
-  context '#adapter' do
-    context 'when adapter is not configured' do
-      before { Horza.reset }
-      after { Horza.reset }
-      it 'throws error' do
-        expect { Horza.adapter }.to raise_error(Horza::Errors::AdapterNotConfigured)
-      end
-    end
-
-    context 'when adapter is configured' do
-      before do
-        Horza.reset
-        Horza.configure { |config| config.adapter = :active_record }
-      end
-      after { Horza.reset }
-      it 'returns appropriate class' do
-        expect(Horza.adapter).to eq Horza::Adapters::ActiveRecord
-      end
-    end
-  end
-end
 
 describe Horza::Entities::Single do
   subject { Horza::Entities::Single.new(first_name: 'Blake') }

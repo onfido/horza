@@ -22,7 +22,7 @@ module Horza
   extend Configuration
 
   class << self
-    delegate :constant_file_paths, :clear_constant_file_paths, :constant_file_paths=,  to: :configuration
+    delegate :constant_file_paths, :clear_constant_file_paths, :constant_file_paths=, :adapter,  to: :configuration
     
     def descendants_map(klass)
       klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
@@ -31,7 +31,6 @@ module Horza
     def adapt(klass)
       adapter.new(klass)
     end
-
 
     def single(params = {})
       Horza::Entities::Single.new(params)
