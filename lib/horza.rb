@@ -16,6 +16,7 @@ require 'horza/entities/single_with_active_model'
 require 'horza/entities'
 require 'horza/configuration'
 require 'horza/errors'
+require 'horza/version'
 
 
 module Horza
