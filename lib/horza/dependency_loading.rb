@@ -15,6 +15,8 @@ module Horza
     end
 
     def resolve_from_file_paths(entity_name)
+      raise ArgumentError.new("No file paths configured to lookup constants") if Horza.constant_file_paths.empty?
+
       file_path = search_for_file(entity_name)
 
       resolved_name = constant_name_for_path(file_path).first
