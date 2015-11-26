@@ -16,14 +16,14 @@ module Horza
   end
 
   class Config
-    attr_accessor :constant_file_paths
+    attr_accessor :constant_paths
 
     def initialize
-      @constant_file_paths = []
+      @constant_paths = []
     end
 
-    def clear_constant_file_paths
-      constant_file_paths.clear
+    def clear_constant_paths
+      constant_paths.clear
     end
 
     def adapter

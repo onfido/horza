@@ -15,7 +15,7 @@ module Horza
     end
 
     def resolve_from_file_paths(entity_name)
-      raise ArgumentError.new("No file paths configured to lookup constants") if Horza.constant_file_paths.empty?
+      raise ArgumentError.new("No file paths configured to lookup constants") if Horza.constant_paths.empty?
 
       file_path = search_for_file(entity_name)
 
@@ -30,7 +30,7 @@ module Horza
 
 
     def constant_name_for_path(file_path)
-      ActiveSupport::Dependencies.loadable_constants_for_path(file_path, Horza.constant_file_paths).tap do |loadables|
+      ActiveSupport::Dependencies.loadable_constants_for_path(file_path, Horza.constant_paths).tap do |loadables|
         if loadables.many?
           raise "It seems that your registered constant file paths are not setup correctly " +
                  "and would cause Horza to try and load the following constants:\n\n #{loadables.map(&:inspect).join(', ')}"
@@ -39,11 +39,11 @@ module Horza
     end
 
      # Search for a file matching the provided suffix.
-     # This recursively checks directories in the #Horza.constant_file_paths for matches.
+     # This recursively checks directories in the #Horza.constant_paths for matches.
     def search_for_file(path_suffix)
       path_suffix = path_suffix.sub(/(\.rb)?$/, ".rb")
 
-      Horza.constant_file_paths.each do |root|
+      Horza.constant_paths.each do |root|
         Dir.glob(File.join(root, "**/")).each do |dir|      
           path = File.join(dir, path_suffix)
           return path if File.file? path
@@ -52,7 +52,7 @@ module Horza
       
       raise MissingFile.new(
         "No matching file found for: '#{path_suffix.sub(/(\.rb)?$/, "")}'\n" +
-        "Searched in: (#{Horza.constant_file_paths.map(&:inspect).join(', ')})"
+        "Searched in: (#{Horza.constant_paths.map(&:inspect).join(', ')})"
       )
     end
 

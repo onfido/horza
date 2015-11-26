@@ -3,12 +3,12 @@ require 'spec_helper'
 describe Horza::DependencyLoading do
   
   before(:each) do 
-    Horza.constant_file_paths += ["spec"] 
+    Horza.constant_paths += ["spec"] 
     ActiveSupport::Dependencies.autoload_paths += ["spec"] 
   end
 
   after(:each) do 
-    Horza.clear_constant_file_paths
+    Horza.clear_constant_paths
     ActiveSupport::Dependencies.autoload_paths.clear
   end
 
@@ -19,14 +19,14 @@ describe Horza::DependencyLoading do
       expect(const.name).to eq "TestConstants::TestEmployer"
     end
 
-    it "raises if #constant_file_paths is empty" do
-      Horza.clear_constant_file_paths
+    it "raises if #constant_paths is empty" do
+      Horza.clear_constant_paths
 
       expect { Horza::DependencyLoading.resolve_dependency("test_employer") }.to raise_error(ArgumentError)
     end
 
-    it "raises if #constant_file_paths has nested directory paths" do
-      Horza.constant_file_paths += ["spec/test_constants"]
+    it "raises if #constant_paths has nested directory paths" do
+      Horza.constant_paths += ["spec/test_constants"]
 
       expect { Horza::DependencyLoading.resolve_dependency("test_employer") }.to raise_error
     end
@@ -40,7 +40,7 @@ describe Horza::DependencyLoading do
       Object.send(:remove_const, :A)
     end
 
-    context "finds multiple matched constant_file_paths" do
+    context "finds multiple matched constant_paths" do
 
       it "resolves constant for first matched file_path" do
         
@@ -54,7 +54,7 @@ describe Horza::DependencyLoading do
   end
   
   describe "::search_for_file" do
-    context "constant_file_paths are given" do
+    context "constant_paths are given" do
       it "returns file path if matched" do
         file_path = Horza::DependencyLoading.search_for_file("test_employer")
         expect(file_path).to eq "spec/test_constants/test_employer.rb"
