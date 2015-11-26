@@ -1,8 +1,9 @@
 require 'spec_helper'
 
-describe Horza::Config do
+describe Horza::Configuration do
+  subject(:target_class) { Class.new.send(:extend, Horza::Configuration) }
+  
   describe "#adapter" do
-
     it "not set" do
       expect { subject.adapter }.to raise_error(Horza::Errors::AdapterError, /No adapter configured/)
     end

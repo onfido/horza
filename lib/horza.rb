@@ -20,10 +20,8 @@ require 'horza/errors'
 
 module Horza
   extend Configuration
-
+  
   class << self
-    delegate :constant_paths, :clear_constant_paths, :constant_paths=, :adapter,  to: :configuration
-    
     def descendants_map(klass)
       klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
     end

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Horza::DependencyLoading do
   
   before(:each) do 
-    Horza.constant_paths += ["spec"] 
+    Horza.configuration.constant_paths += ["spec"] 
     ActiveSupport::Dependencies.autoload_paths += ["spec"] 
   end
 
@@ -26,7 +26,7 @@ describe Horza::DependencyLoading do
     end
 
     it "raises if #constant_paths has nested directory paths" do
-      Horza.constant_paths += ["spec/test_constants"]
+      Horza.configuration.constant_paths += ["spec/test_constants"]
 
       expect { Horza::DependencyLoading.resolve_dependency("test_employer") }.to raise_error
     end

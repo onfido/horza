@@ -15,3 +15,5 @@ module Horza
     end
   end
 end
+
+String.send(:include, ::Horza::CoreExtensions::String)
