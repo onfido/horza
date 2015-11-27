@@ -374,7 +374,7 @@ describe Horza do
 
         context 'valid ancestry with no saved childred' do
           let(:employer2) { Employer.create }
-          it 'returns empty collection error' do
+          it 'returns empty collection' do
             expect(employer_adapter.association(id: employer2.id, target: :users).empty?).to be true
           end
         end
@@ -447,6 +447,13 @@ describe Horza do
 
         it 'returns the correct ancestor' do
           expect(user_adapter.association(id: user.id, target: :sports_cars, via: [:employer]).first).to eq sportscar.attributes
+        end
+
+        context 'valid ancestry with no saved :via association' do
+          it 'returns empty collection' do
+            user.update_attribute(:employer_id, nil)
+            expect(user_adapter.association(id: user.id, target: :sports_cars, via: [:employer])).to be nil
+          end
         end
 
         context 'with eager loading' do

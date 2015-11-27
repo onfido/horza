@@ -80,7 +80,7 @@ module Horza
           base = base.find(options.id)
 
           result = walk_family_tree(base, options)
-          return nil unless result
+          return nil if result.nil?
 
           options.target.to_s.plural? ? entity(query(options, result)) : entity(result.attributes)
         end
@@ -113,6 +113,7 @@ module Horza
         via = options.via || []
 
         via.push(options.target).reduce(object) do |object, relation|
+          return nil if object.nil?
           raise ::Horza::Errors::InvalidAncestry.new(INVALID_ANCESTRY_MSG) unless object.respond_to? relation
           object.send(relation)
         end
