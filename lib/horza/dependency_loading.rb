@@ -6,12 +6,13 @@ module Horza
     MissingFile = Class.new(Error)
 
     def resolve_dependency(entity_name)
+      file_name = entity_name.to_s.underscore
       # Return already loaded constant from memory if possible,
       # otherwise search for a matching filename and try to load that.
-      constant = get_loaded_constant(entity_name)
+      constant = get_loaded_constant(file_name)
       return constant if !constant.nil?
 
-      resolve_from_file_paths(entity_name)
+      resolve_from_file_paths(file_name)
     end
 
     def resolve_from_file_paths(entity_name)

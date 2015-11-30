@@ -14,8 +14,13 @@ describe Horza::DependencyLoading do
 
   describe "::resolve_dependency" do
     
-    it "resolves constant for matching file" do
+    it "resolves constant by file name" do
       const = Horza::DependencyLoading.resolve_dependency("test_employer")
+      expect(const.name).to eq "TestConstants::TestEmployer"
+    end
+
+    it "resolves constant by constant name" do
+      const = Horza::DependencyLoading.resolve_dependency("TestEmployer")
       expect(const.name).to eq "TestConstants::TestEmployer"
     end
 
