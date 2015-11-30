@@ -2,21 +2,9 @@
 
 Horza is a library for decoupling your application from the ORM you have implemented.
 
-## Inputs
-
-Horza uses ORM-specific adapters to decouple Ruby apps from their ORMS.
-
-**Configure Adapter**
+**ActiveRecord Example**
 ```ruby
-Horza.configure do |config|
-  config.adapter = :active_record
-end
-```
-
-**Get Adapter for your ORM Object**
-```ruby
-# ActiveRecord Example
-# Don't worry, We don't actually call things horza_users in our codebase, this is just for emphasis
+# Get Adapter for your ORM Object
 horza_user = Horza.adapt(User)
 
 # Examples
@@ -153,3 +141,66 @@ end
 The returned entity for ActiveRecord adapter now include ActiveModel semantics. This type of
 entity SingleWithActiveModel can work with rails form helper and the submitted params will be
 grouped under params[:horza_entities_single_with_active_model].
+
+
+## Config
+
+Horza uses ORM-specific adapters to decouple Ruby apps from their ORMS.
+Currently only the ActiveRecord  adapter is supported.
+
+**Configure Adapter**
+```ruby
+Horza.configure do |config|
+  config.adapter = :active_record
+end
+```
+
+**Constant paths**
+Some of the operations in Horza involve resolving constants from the given options. 
+Consider the following snippet from above: 
+```ruby
+user.create_as_child(id: parent_id, klass: :employer, options)
+```
+Horza by default will return the <tt>Employer</tt> class if it has already been loaded.    
+In environments where constants are lazy-loaded - such as in Rails -  you would need to explicitly configure paths that Horza should look up when trying to resolve constants.
+
+For instance in a Rails app your models are typically found in the ```app/models``` directory,
+so you would need to add it to the constant_paths.
+
+```ruby
+# config/initializers/horza.rb
+Horza.configure do |config|
+ # config.adapter = :active_record
+  config.constant_paths += [Rails.root.join("app/models").to_s]
+end
+```
+**Note** The file paths added to _constant_paths_ would also need to be added to your app's _autoload_paths_ for the constants to be loaded dynamically. 
+
+**Model Namespaces**
+
+Horza will attempt to resolve namespaced constants where possibble provided the following caveats are met:
+
+- The file names added to the constant_paths and the constants defined in them follow the Rails naming conventions.
+- There aren't multiple files with the same base name in a given directory in the constant paths.
+
+To illustrate the second point consider the following directory structure:
+```ruby
+# app/models/employer.rb
+class Employer < ActiveRecord::Base
+  has_many :users
+end
+
+# app/models/my_namespace/employer.rb
+module MyNamespace
+  class Employer < ActiveRecord::Base
+    has_many :users
+  end
+end
+
+# In this case Horza will load the top level <tt>Employer</tt> model.
+```
+
+**Resetting config** _(At runtime or on app boot)_
+```ruby
+Horza.reset
+```

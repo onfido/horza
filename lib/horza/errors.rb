@@ -1,6 +1,6 @@
 module Horza
   module Errors
-    class AdapterNotConfigured < StandardError
+    class AdapterError < StandardError
     end
 
     class MethodNotImplemented < StandardError
@@ -22,9 +22,6 @@ module Horza
     end
 
     class InvalidOption < StandardError
-    end
-
-    class NoContextForEntity < StandardError
     end
 
     class UnknownAttributeError < StandardError

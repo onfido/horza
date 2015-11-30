@@ -1,3 +1,8 @@
+require 'active_support/inflections'
+require 'active_support/descendants_tracker'
+require 'active_support/core_ext/module/delegation'
+require 'active_support/dependencies'
+require 'horza/dependency_loading'
 require 'horza/adapters/class_methods'
 require 'horza/adapters/instance_methods'
 require 'horza/adapters/options'
@@ -10,13 +15,27 @@ require 'horza/entities/collection'
 require 'horza/entities/single_with_active_model'
 require 'horza/entities'
 require 'horza/configuration'
+require 'horza/shared_config'
 require 'horza/errors'
-require 'active_support/inflections'
+require 'horza/version'
+
 
 module Horza
-  extend Configuration
-
   class << self
+    delegate :constant_paths, :clear_constant_paths, :adapter, :adapter=, to: :configuration
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def reset
+      @configuration = nil  
+    end
+
+    def configure
+      yield(configuration)
+    end
+
     def descendants_map(klass)
       klass.descendants.reduce({}) { |hash, (klass)| hash.merge(klass.name.split('::').last.underscore.to_sym => klass) }
     end

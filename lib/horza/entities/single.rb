@@ -3,6 +3,7 @@ require 'hashie'
 module Horza
   module Entities
     class Single < Hash
+      extend ActiveSupport::DescendantsTracker
       include Hashie::Extensions::MethodAccess
 
       def initialize(attributes)

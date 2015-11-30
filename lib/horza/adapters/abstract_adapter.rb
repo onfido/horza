@@ -3,16 +3,11 @@ module Horza
     class AbstractAdapter
       extend ::Horza::Adapters::ClassMethods
       include ::Horza::Adapters::InstanceMethods
-      extend ActiveSupport::DescendantsTracker
 
       attr_reader :context
 
       class << self
         def expected_errors_map
-          not_implemented_error
-        end
-
-        def entity_context_map
           not_implemented_error
         end
       end

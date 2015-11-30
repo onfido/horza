@@ -1,52 +1,5 @@
 require 'spec_helper'
 
-describe Horza do
-  context '#adapter' do
-    context 'when adapter is not configured' do
-      before { Horza.reset }
-      after { Horza.reset }
-      it 'throws error' do
-        expect { Horza.adapter }.to raise_error(Horza::Errors::AdapterNotConfigured)
-      end
-    end
-
-    context 'when adapter is configured' do
-      before do
-        Horza.reset
-        Horza.configure { |config| config.adapter = :active_record }
-      end
-      after { Horza.reset }
-      it 'returns appropriate class' do
-        expect(Horza.adapter).to eq Horza::Adapters::ActiveRecord
-      end
-    end
-  end
-
-  context '#configuration #namespaces' do
-    context 'when namespaces are not configured' do
-      before { Horza.reset }
-      after { Horza.reset }
-      it 'returns empty array' do
-        expect(Horza.configuration.namespaces.is_a? Array).to be true
-        expect(Horza.configuration.namespaces.empty?).to be true
-      end
-    end
-
-    context 'when namespaces are configured' do
-      module HorzaNamespace
-      end
-
-      before do
-        Horza.reset
-        Horza.configure { |config| config.namespaces = [HorzaNamespace] }
-      end
-      after { Horza.reset }
-      it 'returns configured namespaces class' do
-        expect(Horza.configuration.namespaces).to eq [HorzaNamespace]
-      end
-    end
-  end
-end
 
 describe Horza::Entities::Single do
   subject { Horza::Entities::Single.new(first_name: 'Blake') }

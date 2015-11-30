@@ -1,35 +1,24 @@
 module Horza
-  module Configuration
-    String.send(:include, ::Horza::CoreExtensions::String)
+  class Configuration 
+    attr_accessor :constant_paths
 
-    def configuration
-      @configuration ||= Config.new
+    def initialize
+      @constant_paths = []
     end
 
-    def reset
-      @configuration = Config.new
-      @adapter, @adapter_map = nil, nil # Class-level cache clear
-    end
-
-    def configure
-      yield(configuration)
+    def clear_constant_paths
+      constant_paths.clear
     end
 
     def adapter
-      raise ::Horza::Errors::AdapterNotConfigured.new unless configuration.adapter
-      @adapter ||= adapter_map[configuration.adapter]
+      @adapter || raise(::Horza::Errors::AdapterError.new("No adapter configured"))
     end
 
-    def adapter_map
-      @adapter_map ||= ::Horza.descendants_map(::Horza::Adapters::AbstractAdapter)
-    end
-  end
-
-  class Config
-    attr_accessor :adapter, :development_mode, :namespaces
-
-    def namespaces
-      return @namespaces || []
+    def adapter=(name)
+      @adapter = "Horza::Adapters::#{name.to_s.camelize}".constantize if name
+    rescue NameError
+      raise ::Horza::Errors::AdapterError.new("No adapter found for: #{name}")
+      @adapter = nil
     end
   end
 end
