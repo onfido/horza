@@ -16,30 +16,36 @@ else
     end
   end
 
-  class Employer < ActiveRecord::Base
-    has_many :users
-    has_many :sports_cars
-  end
+  Dir["spec/test_constants/*"].each { |f| load f }
 
-  class User < ActiveRecord::Base
-    belongs_to :employer
-  end
+  # Following are defined for this spec.
+  # 
+  # module TestConstants
+    # class Employer < ActiveRecord::Base
+    #   has_many :users
+    #   has_many :sports_cars
+    # end
 
-  class Customer < ActiveRecord::Base
-    validates :last_name, presence: true
-  end
+    # class User < ActiveRecord::Base
+    #   belongs_to :employer
+    # end
 
-  class SportsCar < ActiveRecord::Base
-    belongs_to :employer
-  end
+    # class Customer < ActiveRecord::Base
+    #   validates :last_name, presence: true
+    # end
 
-  class DummyModel < ActiveRecord::Base
-    belongs_to :employer
-  end
+    # class SportsCar < ActiveRecord::Base
+    #   belongs_to :employer
+    # end
 
-  class OtherDummyModel < ActiveRecord::Base
-    belongs_to :employer
-  end
+    # class DummyModel < ActiveRecord::Base
+    #   belongs_to :employer
+    # end
+
+    # class OtherDummyModel < ActiveRecord::Base
+    #   belongs_to :employer
+    # end
+  # end
 end
 
 class SimpleRecord < ActiveRecord::Base
@@ -53,18 +59,26 @@ end
 describe Horza do
   let(:last_name) { 'Turner' }
   let(:adapter) { :active_record }
-  let(:user_adapter) { Horza.adapt(User) }
+  let(:user_adapter) { Horza.adapt(TestConstants::User) }
   let(:customer_adapter) { Horza.adapt(Customer) }
-  let(:employer_adapter) { Horza.adapt(Employer) }
-  let(:sports_car_adapter) { Horza.adapt(SportsCar) }
+  let(:employer_adapter) { Horza.adapt(TestConstants::Employer) }
+  let(:sports_car_adapter) { Horza.adapt(TestConstants::SportsCar) }
 
   # Reset base config with each iteration
-  before { Horza.configure { |config| config.adapter = adapter } }
+  before do 
+    Horza.configure do |config| 
+      config.adapter = adapter 
+      config.constant_paths += ["spec"] 
+    end
+
+    ActiveSupport::Dependencies.autoload_paths += ["spec"] 
+  end
+
   after do
-    User.delete_all
-    Employer.delete_all
+    TestConstants::User.delete_all
+    TestConstants::Employer.delete_all
     Customer.delete_all
-    SportsCar.delete_all
+    TestConstants::SportsCar.delete_all
   end
 
   context '#context_for_entity' do
@@ -77,17 +91,17 @@ describe Horza do
   end
 
   describe '#adapt' do
-    subject { Horza.adapt(User) }
+    subject { Horza.adapt(TestConstants::User) }
     it 'returns the adaptor class' do
       expect(subject.is_a? Horza::Adapters::ActiveRecord).to be true
     end
     it 'sets the model as context' do
-      expect(subject.context).to eq User
+      expect(subject.context).to eq TestConstants::User
     end
   end
 
   describe 'Queries' do
-    let(:user) { User.create }
+    let(:user) { TestConstants::User.create }
     let(:single_entity_klass) { Horza::Entities::Single }
 
     describe '#get!' do
@@ -121,15 +135,15 @@ describe Horza do
     describe '#find_first!' do
       context 'when users exist' do
         before do
-          3.times { User.create(last_name: last_name) }
-          2.times { User.create(last_name: 'OTHER') }
+          3.times { TestConstants::User.create(last_name: last_name) }
+          2.times { TestConstants::User.create(last_name: 'OTHER') }
         end
         it 'returns single Entity' do
           expect(user_adapter.find_first(conditions: { last_name: last_name }).is_a? Horza::Entities::Single).to be true
         end
 
         it 'returns user' do
-          expect(user_adapter.find_first!(conditions: { last_name: last_name }).to_h).to eq User.where(last_name: last_name).order('id DESC').first.attributes
+          expect(user_adapter.find_first!(conditions: { last_name: last_name }).to_h).to eq TestConstants::User.where(last_name: last_name).order('id DESC').first.attributes
         end
       end
 
@@ -154,8 +168,8 @@ describe Horza do
 
       context 'when users exist' do
         before do
-          3.times { User.create(conditions) }
-          2.times { User.create(last_name: 'OTHER') }
+          3.times { TestConstants::User.create(conditions) }
+          2.times { TestConstants::User.create(last_name: 'OTHER') }
         end
         it 'returns user' do
           expect(user_adapter.find_all(options).length).to eq 3
@@ -171,7 +185,7 @@ describe Horza do
           let(:total) { 20 }
           let(:offset) { 7 }
           before do
-            total.times { User.create(last_name: 'Smith') }
+            total.times { TestConstants::User.create(last_name: 'Smith') }
           end
           it 'offsets response' do
             expect(user_adapter.find_all(conditions: { last_name: 'Smith' }, offset: offset).length).to eq total - offset
@@ -217,7 +231,7 @@ describe Horza do
     end
 
     describe '#create_as_child' do
-      let(:employer) { Employer.create }
+      let(:employer) { TestConstants::Employer.create }
       let(:parent) do
         {
           id: employer.id,
@@ -228,7 +242,7 @@ describe Horza do
 
       context 'when parameters are valid' do
         it 'creates the record' do
-          expect { action }.to change(User, :count).by(1)
+          expect { action }.to change(TestConstants::User, :count).by(1)
         end
 
         it 'returns the entity' do
@@ -246,7 +260,7 @@ describe Horza do
         end
 
         it 'does not create the record' do
-          expect { action }.to change(User, :count).by(0)
+          expect { action }.to change(TestConstants::User, :count).by(0)
         end
 
         it 'returns nil' do
@@ -256,7 +270,7 @@ describe Horza do
     end
 
     describe '#create_as_child!' do
-      let(:employer) { Employer.create }
+      let(:employer) { TestConstants::Employer.create }
       let(:action) { user_adapter.create_as_child!(parent, last_name: last_name) }
 
       context 'when parameters are invalid' do
@@ -347,9 +361,9 @@ describe Horza do
 
     context '#association' do
       context 'direct relation' do
-        let(:employer) { Employer.create }
-        let!(:user1) { User.create(employer: employer) }
-        let!(:user2) { User.create(employer: employer) }
+        let(:employer) { TestConstants::Employer.create }
+        let!(:user1) { TestConstants::User.create(employer: employer) }
+        let!(:user2) { TestConstants::User.create(employer: employer) }
 
         context 'parent' do
           it 'returns parent' do
@@ -362,7 +376,7 @@ describe Horza do
             result = employer_adapter.association(id: employer.id, target: :users)
             expect(result.length).to eq 2
             expect(result.first.is_a? Horza::Entities::Single).to be true
-            expect(result.first.to_hash).to eq User.order('id DESC').first.attributes
+            expect(result.first.to_hash).to eq TestConstants::User.order('id DESC').first.attributes
           end
         end
 
@@ -373,14 +387,14 @@ describe Horza do
         end
 
         context 'valid ancestry with no saved childred' do
-          let(:employer2) { Employer.create }
+          let(:employer2) { TestConstants::Employer.create }
           it 'returns empty collection' do
             expect(employer_adapter.association(id: employer2.id, target: :users).empty?).to be true
           end
         end
 
         context 'valid ancestry with no saved parent' do
-          let(:user2) { User.create }
+          let(:user2) { TestConstants::User.create }
           it 'returns nil' do
             expect(user_adapter.association(id: user2.id, target: :employer)).to be nil
           end
@@ -392,8 +406,8 @@ describe Horza do
           let(:conditions) { { last_name: 'Turner' } }
 
           before do
-            turner_total.times { employer.users << User.create(conditions.merge(employer: employer)) }
-            other_total.times { employer.users << User.create(employer: employer) }
+            turner_total.times { employer.users << TestConstants::User.create(conditions.merge(employer: employer)) }
+            other_total.times { employer.users << TestConstants::User.create(employer: employer) }
           end
 
           context 'limit' do
@@ -417,7 +431,7 @@ describe Horza do
           context 'order' do
             it 'orders response' do
               horza_response =  employer_adapter.association(id: employer.id, target: :users, conditions: conditions, order: { id: :asc })
-              ar_response = User.where(conditions).order('id asc')
+              ar_response = TestConstants::User.where(conditions).order('id asc')
               expect(horza_response.first.id).to eq ar_response.first.id
               expect(horza_response.last.id).to eq ar_response.last.id
             end
@@ -427,7 +441,7 @@ describe Horza do
             context 'simple' do
               it 'works as expected' do
                 horza_response =  employer_adapter.association(id: employer.id, target: :users, conditions: conditions, order: { id: :asc }, eager_load: true)
-                ar_response = User.where(conditions).order('id asc')
+                ar_response = TestConstants::User.where(conditions).order('id asc')
                 expect(horza_response.first.id).to eq ar_response.first.id
                 expect(horza_response.last.id).to eq ar_response.last.id
               end
@@ -437,9 +451,9 @@ describe Horza do
       end
 
       context 'using via' do
-        let(:employer) { Employer.create }
-        let(:user) { User.create(employer: employer) }
-        let(:sportscar) { SportsCar.create(employer: employer) }
+        let(:employer) { TestConstants::Employer.create }
+        let(:user) { TestConstants::User.create(employer: employer) }
+        let(:sportscar) { TestConstants::SportsCar.create(employer: employer) }
 
         before do
           employer.sports_cars << sportscar
@@ -507,8 +521,8 @@ describe Horza do
 
       context 'without conditions' do
         context 'when one join record exists' do
-          let!(:employer) { Employer.create(name: 'Corporation ltd.', boss_email: 'boss@boss.com') }
-          let!(:user) { User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
+          let!(:employer) { TestConstants::Employer.create(name: 'Corporation ltd.', boss_email: 'boss@boss.com') }
+          let!(:user) { TestConstants::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
 
           context 'without fields' do
             it 'returns joined record' do
@@ -541,8 +555,8 @@ describe Horza do
           end
 
           context 'complex predicate' do
-            let!(:match_user) { User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'boss@boss.com') }
-            let!(:match_user2) { User.create(employer: employer, first_name: 'Helen', last_name: 'Jones', email: 'boss@boss.com') }
+            let!(:match_user) { TestConstants::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'boss@boss.com') }
+            let!(:match_user2) { TestConstants::User.create(employer: employer, first_name: 'Helen', last_name: 'Jones', email: 'boss@boss.com') }
             it 'returns joined records and the specified fields' do
               result = user_adapter.join(complex_predicate)
               expect(result.length).to eq 2
@@ -556,8 +570,8 @@ describe Horza do
         end
 
         context 'when no join record exists' do
-          let!(:employer) { Employer.create(name: 'Corporation ltd.') }
-          let!(:user) { User.create(employer_id: 9999, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
+          let!(:employer) { TestConstants::Employer.create(name: 'Corporation ltd.') }
+          let!(:user) { TestConstants::User.create(employer_id: 9999, first_name: 'John', last_name: 'Turner', email: 'email@email.com') }
 
           it 'returns an empty collection' do
             result = user_adapter.join(simple)
@@ -566,10 +580,10 @@ describe Horza do
         end
 
         context 'when multiple join records exists' do
-          let!(:employer) { Employer.create(name: 'Corporation ltd.') }
-          let!(:user) { User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
-          let!(:user2) { User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
-          let!(:user3) { User.create(employer: employer, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+          let!(:employer) { TestConstants::Employer.create(name: 'Corporation ltd.') }
+          let!(:user) { TestConstants::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+          let!(:user2) { TestConstants::User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
+          let!(:user3) { TestConstants::User.create(employer: employer, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
 
           it 'returns an empty collection' do
             result = user_adapter.join(simple)
@@ -579,11 +593,11 @@ describe Horza do
       end
 
       context 'with conditions' do
-        let!(:employer) { Employer.create(name: 'Corporation ltd.') }
-        let!(:employer2) { Employer.create(name: 'BigBucks ltd.') }
-        let!(:user) { User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
-        let!(:user2) { User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
-        let!(:user3) { User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+        let!(:employer) { TestConstants::Employer.create(name: 'Corporation ltd.') }
+        let!(:employer2) { TestConstants::Employer.create(name: 'BigBucks ltd.') }
+        let!(:user) { TestConstants::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+        let!(:user2) { TestConstants::User.create(employer: employer, first_name: 'Adam', last_name: 'Boots', email: 'email@boots.com') }
+        let!(:user3) { TestConstants::User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
 
         it 'returns only the joins that match the conditions' do
           result = user_adapter.join(conditions)
@@ -593,11 +607,11 @@ describe Horza do
       end
 
       context 'limits/offset' do
-        let!(:employer) { Employer.create(name: 'Corporation ltd.') }
-        let!(:employer2) { Employer.create(name: 'BigBucks ltd.') }
-        let!(:user) { User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
-        let!(:user2) { User.create(employer: employer, first_name: 'Adam', last_name: 'Turner', email: 'email@boots.com') }
-        let!(:user3) { User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
+        let!(:employer) { TestConstants::Employer.create(name: 'Corporation ltd.') }
+        let!(:employer2) { TestConstants::Employer.create(name: 'BigBucks ltd.') }
+        let!(:user) { TestConstants::User.create(employer: employer, first_name: 'John', last_name: 'Turner', email: 'email@turner.com') }
+        let!(:user2) { TestConstants::User.create(employer: employer, first_name: 'Adam', last_name: 'Turner', email: 'email@boots.com') }
+        let!(:user3) { TestConstants::User.create(employer: employer2, first_name: 'Tim', last_name: 'Socks', email: 'email@socks.com') }
 
         it 'limits the joins that match the conditions' do
           params = conditions.merge(limit: 1)
@@ -619,7 +633,7 @@ describe Horza do
   describe 'Entities' do
     describe 'Collection' do
       let(:members) do
-        3.times.map { User.create }
+        3.times.map { TestConstants::User.create }
       end
 
       let(:single_entity_klass) { Horza::Entities::SingleWithActiveModel }
