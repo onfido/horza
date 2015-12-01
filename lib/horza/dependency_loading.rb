@@ -7,11 +7,8 @@ module Horza
 
     def resolve_dependency(entity_name)
       file_name = entity_name.to_s.underscore
-      # Return already loaded constant from memory if possible,
-      # otherwise search for a matching filename and try to load that.
-      constant = get_loaded_constant(file_name)
-      return constant if !constant.nil?
-
+      # Search for a matching filename in #constant_paths 
+      # and try to load a constant that matches.
       resolve_from_file_paths(file_name)
     end
 
@@ -55,13 +52,6 @@ module Horza
         "No matching file found for: '#{path_suffix.sub(/(\.rb)?$/, "")}'\n" +
         "Searched in: (#{Horza.constant_paths.map(&:inspect).join(', ')})"
       )
-    end
-
-    def get_loaded_constant(entity_name)
-      constant_name = entity_name.camelize
-      if ActiveSupport::Dependencies.qualified_const_defined?(constant_name)
-        return ActiveSupport::Dependencies::Reference.get(constant_name)
-      end
     end
 
   end
