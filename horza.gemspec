@@ -17,10 +17,11 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'hashie', '3.4.0'
-  s.add_runtime_dependency 'activesupport', '~> 3.2'
+  s.add_runtime_dependency 'activesupport', '>= 3.2'
 
   s.add_development_dependency 'rspec'
-  s.add_development_dependency 'byebug', '>= 4.0'
-  s.add_development_dependency 'activerecord', '~> 3.2'
+  s.add_development_dependency 'byebug', '>= 4.0', '< 9.1'
+  s.add_development_dependency 'activerecord', '>= 3.2'
   s.add_development_dependency 'sqlite3'
+  s.add_development_dependency "appraisal", "~> 2.1.0"
 end
