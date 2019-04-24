@@ -16,7 +16,7 @@ module Horza
       if Horza.constant_paths.empty?
         # try in current scope, even with no lookup paths configured
         begin
-          entity_name.capitalize.constantize
+          entity_name.camelize.constantize
         rescue NameError
           raise ArgumentError.new("No file paths configured to lookup constants")
         end
